@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Walk</title>
+		<meta charset="utf-8">
+		<meta name="description" content="New way to discover cool monuments near you!">
+		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+		<link rel="apple-touch-icon" href="https://www.joshua.ovh/walk/logoappi.png" />
+		<link rel="icon" type="image/png" href="https://www.joshua.ovh/walk/favicon.png" />
+    	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
+		<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
+
+		<link rel="stylesheet" href="assets/app.css">
+	</head>
+	<body>
+		<!-- Logo -->
+		<img src="https://www.joshua.ovh/walk/icon.png" id="logo" style="z-index:99999">
+		
+		<!-- Search walk // POI List -->
+		<div style="z-index:99999;position: absolute;bottom:32px;left:10px;background:rgba(255, 255, 255, .5);padding:12px;border-radius:8px;width:200px;" id="popupSearch">
+			<center>
+				<p>I have <b><span id="val">30</span> minutes</b></p>
+				<input type="range" id="freeTime" min="10" max="120" step="5" value="30" class="slider"><br><br>
+				<button id="searchBtn">Search a walk</button>
+			</center>
+		</div>
+		<div style="z-index:99999;position: absolute;bottom:32px;left:10px;background:rgba(255, 255, 255, .5);padding:12px;border-radius:8px;width:200px; display: none;" id="popupList">
+			<p>Here's your walk:</p>
+			<ul id="listStyle">
+				
+			</ul>
+			<center><button id="go">GO</button> &nbsp;&nbsp;&nbsp; <button id="cancel">Cancel</button></center>
+		</div>
+
+		<div id='map'></div>
+
+    	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
+    	<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
+    	<script
+			  src="https://code.jquery.com/jquery-3.2.1.min.js"
+			  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+			  crossorigin="anonymous"></script>
+		<script src="assets/api.js"></script>
+		<script src="assets/app.js"></script>
+	</body>
+</html>
