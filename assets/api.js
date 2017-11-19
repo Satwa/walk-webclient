@@ -21,8 +21,7 @@ var rootApi = "http://api.joshua.ovh:3012/";
 }*/
 
 // Dev wrapper
-function getWalk(position, time){
-	console.log("Clicked!");
+function getNearWalk(position, time){
 	return $.ajax({
 		url: "api.php?type=" + "walk",
 		type: "POST",
@@ -38,5 +37,32 @@ function getWalk(position, time){
 			return data;
 		}
 		return data;
+	});
+}
+
+function getWalk(id){
+	return $.ajax({
+		url: "api.php?type=" + "walkid&id=" + id,
+		type: "GET"
+	})
+	.done(function(data){
+		return data;
+	});
+}
+
+function getWalkTimeline(position){
+	alert("Not implemented yet");
+	return false;
+
+	return $.ajax({
+		url: "api.php?type=" + "walktimeline",
+		type: "POST",
+		data: {
+			startLat: position.lat,
+			startLon: position.lon,
+		}
+	})
+	.done(function(data){
+		console.log(data);
 	});
 }

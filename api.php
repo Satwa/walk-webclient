@@ -4,10 +4,7 @@
 		echo "{}";
 	}else{
 		$type = $_GET['type'];
-		if($_SERVER["CONTENT_TYPE"] == "application/json"){
-			print_r($_SERVER);
-
-		}
+        
 		switch ($type) {
 			case 'walk':
 				if(isset($_POST["startLon"]) && isset($_POST["startLat"]) && isset($_POST["time"])){
@@ -16,7 +13,14 @@
 					echo "{}";
 				}
 				break;
-				
+			case 'walkid':
+                if(isset($_GET['id'])){
+                    echo callAPI("GET", "walk/".$_GET['id']);
+                }else{
+                    echo "{}";
+                }
+
+                break;
 			default:
 				# code...
 				break;
