@@ -2,6 +2,7 @@ $('#val').html( $("#freeTime").val() );
 $(document).on('input', '#freeTime', function() {
     $('#val').html( $(this).val() );
 });
+var goUrl;
 
 $("#searchBtn").click(function(e){
 	e.preventDefault();
@@ -23,6 +24,7 @@ $("#searchBtn").click(function(e){
 		$("#searchBtn").html("Search a walk");
 		if(data.error === undefined){
 			data = data[0];
+			goUrl = data.walkId;
 			directions.removeRoutes();
 			directions.setOrigin([geopos.lon, geopos.lat]);
 	        waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
@@ -51,7 +53,8 @@ $("#searchBtn").click(function(e){
 });
 $("#go").click(function(e){
 	e.preventDefault();
-	alert("Not implemented yet");
+	window.location.replace("directions.html?id=" + goUrl);
+
 	/*
 		On dirige vers une autre page dédiée avec : 
 			* en haut prochaine direction & ETA, map zoomée sur l'utilisateur

@@ -9,13 +9,12 @@ body{
     position: fixed;
     width:100vw;
 }
-
 #map{ 
 	position:absolute; 
 	top:0; 
 	bottom:0; 
 	width:100%;
-    height:60vh;
+    height:50vh;
     z-index: 999;
 }
 
@@ -25,8 +24,8 @@ body{
     /*padding:12px;*/
     border-radius:8px;
     width:100%;
-    height:40vh;
-    margin-top: 60vh;
+    height:50vh;
+    margin-top: 50vh;
     overflow: scroll;
 }
 #popupList{ display: none; padding:0; padding-bottom: 8px;}

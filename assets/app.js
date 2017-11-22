@@ -24,3 +24,10 @@ var directions = new MapboxDirections({
 map.addControl(geolocate);
 map.addControl(directions, 'top-left');
 setTimeout(geolocate._onClickGeolocate.bind(geolocate), 250);
+
+window.retro = window.retro || function() { (window.retro.initial = window.retro.initial || []).push(arguments); };
+retro('startTracking', {
+    apiKey: '16JRtr',
+    recordPageLoad: true, // Default
+    recordUtmParameters: true // Default
+});

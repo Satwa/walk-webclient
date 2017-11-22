@@ -1,5 +1,5 @@
 var rootApi = "http://api.joshua.ovh:3012/";
-
+var wrapperApi = "api.php?type=";
 /*function getWalk(position, time){
 	console.log("Clicked!");
 	return $.ajax({
@@ -23,7 +23,7 @@ var rootApi = "http://api.joshua.ovh:3012/";
 // Dev wrapper
 function getNearWalk(position, time){
 	return $.ajax({
-		url: "api.php?type=" + "walk",
+		url: wrapperApi + "walk",
 		type: "POST",
 		data: {
 			startLat: position.lat,
@@ -42,7 +42,7 @@ function getNearWalk(position, time){
 
 function getWalk(id){
 	return $.ajax({
-		url: "api.php?type=" + "walkid&id=" + id,
+		url: wrapperApi + "walkid&id=" + id,
 		type: "GET"
 	})
 	.done(function(data){
@@ -53,9 +53,9 @@ function getWalk(id){
 function getWalkTimeline(position){
 	alert("Not implemented yet");
 	return false;
-
+/*
 	return $.ajax({
-		url: "api.php?type=" + "walktimeline",
+		url: wrapperApi + "walktimeline",
 		type: "POST",
 		data: {
 			startLat: position.lat,
@@ -64,5 +64,5 @@ function getWalkTimeline(position){
 	})
 	.done(function(data){
 		console.log(data);
-	});
+	});*/
 }
