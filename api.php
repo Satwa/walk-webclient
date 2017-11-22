@@ -30,8 +30,8 @@
 
 function callAPI($method, $url, $data = false){
     $curl = curl_init();
-    $url = "http://localhost:8081/" . $url;
-    //$url = "http://api.joshua.ovh:3012/" . $url;
+    //$url = "http://localhost:8081/" . $url;
+    $url = "http://api.joshua.ovh:3012/" . $url;
 
     switch ($method){
         case "POST":
