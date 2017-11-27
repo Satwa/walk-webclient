@@ -7,7 +7,7 @@ var goUrl, geopos;
 $("#searchBtn").click(function(e){
 	e.preventDefault();
 	if(!geolocate._lastKnownPosition){
-		alert("Please retry!");
+		alert("Please wait... Map is loading");
 		return false;
 	}
 	//Add Loading
@@ -25,6 +25,8 @@ $("#searchBtn").click(function(e){
 		if(data.error === undefined){
 			data = data[0];
 			goUrl = data.walkId;
+			window.history.pushState("", "", 'index.html?id=' + goUrl);
+			
 			directions.removeRoutes();
 			directions.setOrigin([geopos.lon, geopos.lat]);
 			var allPos = "";
@@ -44,7 +46,7 @@ $("#searchBtn").click(function(e){
 	        }
 	        directions.setDestination([geopos.lon, geopos.lat]);
 	       	
-	       	//directionsInfo = getDirections(allPos);
+	       	directionsInfo = getDirections(allPos);
 	        
 	        map.flyTo({
 	            center: [geopos.lon, geopos.lat],
@@ -63,8 +65,8 @@ $("#searchBtn").click(function(e){
 });
 $("#go").click(function(e){
 	e.preventDefault();
-/*	var noSleep = new NoSleep();
-	noSleep.enable();*/
+	var noSleep = new NoSleep();
+	noSleep.enable();
 	//window.location.replace("directions.html?id=" + goUrl);
 	$("#popupSearch").css("display", "none");
 	$("#popupList").css("display", "none");
@@ -88,7 +90,7 @@ $("#go").click(function(e){
 			map.easeTo({
 				center: [geopos.lon, geopos.lat],
 		        pitch: 60,
-			    bearing: 360 - compassdir,
+			    bearing: compassdir,
 			});
 		});
 	}
@@ -115,6 +117,33 @@ function getDirections(allPos){
 	})
 	.done(function(data){
 		console.log(data);
+		console.log(data.routes[0].legs[0].steps);
+       	var steps = data.routes[0].legs[0].steps;
+       	var allSteps = [],
+       		stepsLocation = [];
+
+       	let i = 0;
+		steps.forEach(function(step) {
+    		i++;
+		 	allSteps.push(step.maneuver.instruction);
+		 	stepsLocation.push(step.maneuver.location);
+		 	if(i == steps.length){
+				console.log(allSteps);
+				/*
+					TODO:
+						- Comparer la position de l'utilisateur avec stepsLocation[0] (avec une précision de 0.0001 à 0.00001)
+							- Si c'est bon => on affiche allSteps[1], on unset stepsLocation[0] & allSteps[0]
+						- Afficher une barre en haut avec l'instruction
+						- Affiche une barre en bas pour partager
+					www.walk.cafe => Landing Page
+					app.walk.cafe => Walk webclient
+					https://www.mapbox.com/help/getting-started-directions-api/
+				*/
+		 	}
+		});
+		/*.then(function(){
+		});*/
+		
 		return data;
 	});
 }
