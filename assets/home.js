@@ -1,8 +1,12 @@
-$('#val').html( $("#freeTime").val() );
+$('#val').html($("#freeTime").val());
 $(document).on('input', '#freeTime', function() {
-    $('#val').html( $(this).val() );
+    $('#val').html($(this).val());
 });
 var goUrl, geopos;
+var allPos = "";
+var allSteps = [],
+    stepsLocation = [];
+
 
 $("#searchBtn").click(function(e){
 	e.preventDefault();
@@ -26,11 +30,11 @@ $("#searchBtn").click(function(e){
 			data = data[0];
 			goUrl = data.walkId;
 			window.history.pushState("", "", 'index.html?id=' + goUrl);
-			
+
 			directions.removeRoutes();
 			directions.setOrigin([geopos.lon, geopos.lat]);
-			var allPos = "";
-	        waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
+
+	    waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
 			for (var i = 0; i < data.poi.length; i++) {
 				if(data.poi[i].name === undefined){
 					data.poi[i].name = "Your position";
@@ -45,9 +49,8 @@ $("#searchBtn").click(function(e){
 	            waypoints += "<li>" + data.poi[i].name + "</li> \n";
 	        }
 	        directions.setDestination([geopos.lon, geopos.lat]);
-	       	
-	       	directionsInfo = getDirections(allPos);
-	        
+
+
 	        map.flyTo({
 	            center: [geopos.lon, geopos.lat],
 	            zoom: 13
@@ -70,8 +73,12 @@ $("#go").click(function(e){
 	//window.location.replace("directions.html?id=" + goUrl);
 	$("#popupSearch").css("display", "none");
 	$("#popupList").css("display", "none");
+	$("#information").css("display", "block");
 	$("#map").css("height", "100vh");
-	map.resize();
+
+  directionsInfo = getDirections(allPos);
+
+  map.resize();
 	map.flyTo({
 		pitch: 60,
 		zoom: 20,
@@ -95,7 +102,7 @@ $("#go").click(function(e){
 		});
 	}
 	/*
-		On dirige vers une autre page dédiée avec : 
+		On dirige vers une autre page dédiée avec :
 			* en haut prochaine direction & ETA, map zoomée sur l'utilisateur
 			* en bas lien pour partager la balade sur les réseaux sociaux & ouvrir dans Maps/Plans
 		* Réorganiser l'interface
@@ -116,34 +123,46 @@ function getDirections(allPos){
 		url: "https://api.mapbox.com/directions/v5/mapbox/walking/" + allPos + "?steps=true&access_token=" + mapboxgl.accessToken
 	})
 	.done(function(data){
-		console.log(data);
-		console.log(data.routes[0].legs[0].steps);
-       	var steps = data.routes[0].legs[0].steps;
-       	var allSteps = [],
-       		stepsLocation = [];
-
-       	let i = 0;
+   	var steps = data.routes[0].legs[0].steps;
+   	let i = 0;
 		steps.forEach(function(step) {
-    		i++;
+    	i++;
 		 	allSteps.push(step.maneuver.instruction);
 		 	stepsLocation.push(step.maneuver.location);
 		 	if(i == steps.length){
-				console.log(allSteps);
-				/*
-					TODO:
-						- Comparer la position de l'utilisateur avec stepsLocation[0] (avec une précision de 0.0001 à 0.00001)
-							- Si c'est bon => on affiche allSteps[1], on unset stepsLocation[0] & allSteps[0]
-						- Afficher une barre en haut avec l'instruction
-						- Affiche une barre en bas pour partager
-					www.walk.cafe => Landing Page
-					app.walk.cafe => Walk webclient
-					https://www.mapbox.com/help/getting-started-directions-api/
-				*/
+        $("#information").html(allSteps[0]);
+        //console.log(allSteps);
+        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 		 	}
 		});
-		/*.then(function(){
-		});*/
-		
-		return data;
 	});
+}
+
+/*
+  TODO:
+    - Affiche une barre pour partager
+    - Vérifier si id dans le lien au chargement, dans ce cas on affiche direct popupList & on ask le server l'id
+  https://www.mapbox.com/help/getting-started-directions-api/
+*/
+
+function showCurrentDirection(){
+  geopos = {
+		lat: geolocate._lastKnownPosition.coords.latitude,
+		lon: geolocate._lastKnownPosition.coords.longitude
+	};
+  let roundValue = 4; // Default is 4, else is for debug (such as 2)
+  // console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
+  // console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + "- LON: " + stepsLocation[0][0].toFixed(roundValue));
+  if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
+    $("#information").html(allSteps[1]);
+    allSteps.splice(0, 1);
+    stepsLocation.splice(0, 1);
+
+  	map.flyTo({
+  		center: [geopos.lon, geopos.lat]
+  	});
+
+    console.log("Near!");
+  }
+  // TODO: let ETA = 2; // v = d/t <=> t = d/v  // https://stackoverflow.com/questions/7687884/add-10-seconds-to-a-javascript-date-object-timeobject
 }

@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<meta name="description" content="The new way to discover cool monuments near you!">
 		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-		<link rel="apple-touch-icon" href="https://www.joshua.ovh/walk/logoappi.png" />
+		<link rel="apple-touch-icon" href="assets/logoappi.png" />
 		<link rel="icon" type="image/png" href="https://www.joshua.ovh/walk/favicon.png" />
     	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
 		<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
@@ -14,8 +14,8 @@
 	</head>
 	<body>
 		<!-- Logo -->
-		<img src="https://www.joshua.ovh/walk/icon.png" id="logo" style="z-index:99999">
-		
+		<img src="assets/icon.png" id="logo" style="z-index:99999">
+
 		<!-- Search walk // POI List -->
 		<div id="popupSearch">
 			<center>
@@ -24,17 +24,18 @@
 				<button id="searchBtn">Search a walk</button>
 			</center>
 		</div>
-		<div id="popupList">  
+		<div id="popupList">
 			<p>
-				<a id="cancel" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a> 
-				<span style="text-align: center;">Here's your walk</span> 
+				<a id="cancel" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a>
+				<span style="text-align: center;">Here's your walk</span>
 				<a id="go" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;">Go</a>
 			</p>
 			<ul id="listStyle">
-				
+
 			</ul>
 			<center> &nbsp;&nbsp;&nbsp; </center><br><br><br>
 		</div>
+		<div id="information"></div>
 
 		<div id='map'></div>
 
