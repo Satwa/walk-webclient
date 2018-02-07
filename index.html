@@ -24,9 +24,18 @@
 				<button id="searchBtn">Search a walk</button>
 			</center>
 		</div>
+		<div id="popupChoice">
+			<p>
+				<a class="cancel" cancel="search" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a>
+				<span style="text-align: center;">We generated these walks for you</span>
+			</p>
+			<ul>
+				
+			</ul>
+		</div>
 		<div id="popupList">
 			<p>
-				<a id="cancel" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a>
+				<a class="cancel" cancel="choice" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a>
 				<span style="text-align: center;">Here's your walk</span>
 				<a id="go" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;">Go</a>
 			</p>
@@ -50,5 +59,20 @@
 		<script src="assets/app.js"></script>
 		<script src="assets/nosleep.min.js"></script>
 		<script src="assets/home.js"></script>
+		<!-- Matomo -->
+		<!--<script type="text/javascript">
+		  var _paq = _paq || [];
+		  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+		  _paq.push(['trackPageView']);
+		  _paq.push(['enableLinkTracking']);
+		  (function() {
+		    var u="//www.joshua.ovh/matomo/";
+		    _paq.push(['setTrackerUrl', u+'piwik.php']);
+		    _paq.push(['setSiteId', '4']);
+		    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+		    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+		  })();
+		</script>-->
+		<!-- End Matomo Code -->
 	</body>
 </html>

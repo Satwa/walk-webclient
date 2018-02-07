@@ -6,12 +6,13 @@ var goUrl, geopos;
 var allPos = "";
 var allSteps = [],
     stepsLocation = [];
+var saveData;
 
 
 $("#searchBtn").click(function(e){
 	e.preventDefault();
 	if(!geolocate._lastKnownPosition){
-		alert("Please wait... Map is loading");
+		alert("Please wait while map is loading...");
 		return false;
 	}
 	//Add Loading
@@ -27,45 +28,77 @@ $("#searchBtn").click(function(e){
 		$("#searchBtn").prop('disabled', false);
 		$("#searchBtn").html("Search a walk");
 		if(data.error === undefined){
-			data = data[0];
-			goUrl = data.walkId;
-			window.history.pushState("", "", 'index.html?id=' + goUrl);
+			console.log(data);
 
-			directions.removeRoutes();
-			directions.setOrigin([geopos.lon, geopos.lat]);
+			saveData = data;
 
-	    waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
-			for (var i = 0; i < data.poi.length; i++) {
-				if(data.poi[i].name === undefined){
-					data.poi[i].name = "Your position";
+			let walks = "";
+			if(data.f !== null)
+				walks += "<li>Walk #1" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			if(data.w !== null)
+				walks += "<li>Walk #2" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			if(data.g !== null)
+				walks += "<li>Walk #3" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			$('#popupChoice ul').html(walks);
+
+			$(".walkDetail").click(function(e){
+				e.preventDefault();
+				waypoints = "";
+
+				switch($(this).attr("walk-type")){
+					case "f":
+						data = saveData.f;
+						break;
+					case "w":
+						data = saveData.w;
+						break;
+					case "g":
+						data = saveData.g;
+						break;
 				}
-				if(i == data.poi.length - 1){
-					//Last
-					allPos += data.poi[i].lon + "," + data.poi[i].lat;
-				}else{
-					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
-				}
-	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-	            waypoints += "<li>" + data.poi[i].name + "</li> \n";
-	        }
-	        directions.setDestination([geopos.lon, geopos.lat]);
+				goUrl = data.walkId;
+				window.history.pushState("", "", 'index.html?id=' + goUrl);
+				
+				directions.removeRoutes();
+				directions.setOrigin([geopos.lon, geopos.lat]);
+
+				waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
+				for (var i = 0; i < data.poi.length; i++) {
+					if(data.poi[i].name === undefined){
+						data.poi[i].name = "Your position";
+					}
+					if(i == data.poi.length - 1){
+						//Last
+						allPos += data.poi[i].lon + "," + data.poi[i].lat;
+					}else{
+						allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+					}
+		            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+		            waypoints += "<li>" + data.poi[i].name + "</li> \n";
+		        }
+		        directions.setDestination([geopos.lon, geopos.lat]);
+		        map.flyTo({
+		            center: [geopos.lon, geopos.lat],
+		            zoom: 13
+		        });
+	        	$('#popupList #listStyle').html(waypoints);
 
 
-	        map.flyTo({
-	            center: [geopos.lon, geopos.lat],
-	            zoom: 13
-	        });
-        	$('#popupList #listStyle').html(waypoints);
+				$("#popupSearch").css("display", "none");
+				$("#popupChoice").css("display", "none");
+				$("#popupList").css("display", "block");
+			})
 		}else{
-        	$('#popupList #listStyle').html("No cool monument found <br> Suggest a walk at @getwalkapp");
+        	$('#popupList #listStyle').html("I'm sorry but I found nothing interesting <br> You can suggest a walk at <a href='https://twitter.com/getwalkapp' target='_blank'>@getwalkapp</a>");
 		}
 
-
 		$("#popupSearch").css("display", "none");
-		$("#popupList").css("display", "block");
+		$("#popupChoice").css("display", "block");
+		$("#popupList").css("display", "none");
 
 	});
 });
+
 $("#go").click(function(e){
 	e.preventDefault();
 	var noSleep = new NoSleep();
@@ -76,9 +109,9 @@ $("#go").click(function(e){
 	$("#information").css("display", "block");
 	$("#map").css("height", "100vh");
 
-  directionsInfo = getDirections(allPos);
+  	directionsInfo = getDirections(allPos);
 
-  map.resize();
+	map.resize();
 	map.flyTo({
 		pitch: 60,
 		zoom: 20,
@@ -109,10 +142,17 @@ $("#go").click(function(e){
 		* Identifier s'il y a un id & showList
 	*/
 });
-$("#cancel").click(function(e){
+$(".cancel").click(function(e){
 	e.preventDefault();
-	$("#popupSearch").css("display", "block");
-	$("#popupList").css("display", "none");
+	if($(this).attr("cancel") == "search"){
+		$("#popupChoice").css("display", "none");
+		$("#popupList").css("display", "none");
+		$("#popupSearch").css("display", "block");
+	}else{
+		$("#popupChoice").css("display", "block");
+		$("#popupList").css("display", "none");
+		$("#popupSearch").css("display", "none");
+	}
 	directions.removeRoutes();
 });
 
@@ -126,13 +166,13 @@ function getDirections(allPos){
    	var steps = data.routes[0].legs[0].steps;
    	let i = 0;
 		steps.forEach(function(step) {
-    	i++;
+	    	i++;
 		 	allSteps.push(step.maneuver.instruction);
 		 	stepsLocation.push(step.maneuver.location);
 		 	if(i == steps.length){
-        $("#information").html(allSteps[0]);
-        //console.log(allSteps);
-        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
+		        $("#information").html(allSteps[0]);
+		        //console.log(allSteps);
+		        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 		 	}
 		});
 	});

@@ -18,7 +18,7 @@ body{
     z-index: 999;
 }
 
-#popupSearch, #popupList{
+#popupSearch, #popupList, #popupChoice{
     z-index:99999;
     background:rgba(255, 255, 255, .5);
     border-radius:8px;
@@ -27,10 +27,10 @@ body{
     margin-top: 50vh;
     overflow: scroll;
 }
-#popupList{ display: none; padding:0; padding-bottom: 8px;}
-#popupList ul{ padding:0; }
-#popupList p{ text-align: center; font-size: 18px; border-bottom:2px solid lightgray; padding-bottom: 8px; }
-#popupList ul li{
+#popupList, #popupChoice{ display: none; padding:0; padding-bottom: 8px;}
+#popupList ul, #popupChoice ul{ padding:0; }
+#popupList p, #popupChoice p{ text-align: center; font-size: 18px; border-bottom:2px solid lightgray; padding-bottom: 8px; }
+#popupList ul li, #popupChoice ul li{
     list-style-type: none;
     padding:0;
     margin:0;
@@ -53,16 +53,19 @@ img#logo{
     display: none;
 }
 
+*:focus{outline: none;}
+
 .slider {
     -webkit-appearance: none;
     width: 80%;
     height: 8px;
     border-radius: 5px;
-    background: #343434; /* d3d3d3 */
+    border:1px solid #343434; /* d3d3d3 */
     outline: none;
     opacity: 0.7;
     -webkit-transition: .2s;
     transition: opacity .2s;
+    outline: none;
 }
 
 .slider::-webkit-slider-thumb {
@@ -72,6 +75,7 @@ img#logo{
     height: 20px;
     border-radius: 50%;
     background: #DA552F;
+    border:none;
     cursor: pointer;
 }
 
@@ -80,6 +84,7 @@ img#logo{
     height: 20px;
     border-radius: 50%;
     background: #DA552F;
+    border:none;
     cursor: pointer;
 }
 .slider::-moz-range-track {
@@ -90,7 +95,7 @@ img#logo{
     #map{
         height:80vh;
     }
-    #popupList, #popupSearch{
+    #popupList, #popupSearch, #popupChoice{
         height:20vh;
         margin-top: 80vh;
     }
