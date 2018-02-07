@@ -7,7 +7,24 @@ var allPos = "";
 var allSteps = [],
     stepsLocation = [];
 var saveData;
+var waypoints = "";
 
+$(document).ready(function(){
+	let id = getUrlParameter('id') 
+
+	if(id !== undefined && !isNaN(parseInt(id))){
+		// Il existe un id donc on le parse
+		$("#searchBtn").prop('disabled', true);
+		$("#searchBtn").html("Loading...");
+		navigator.geolocation.getCurrentPosition(function(position) {
+		  	geopos = {
+				lat: position.coords.latitude,
+				lon: position.coords.longitude
+			};
+			getWalk(getUrlParameter('id')).then(oneWalkCallback).catch((e) => console.error(e))
+		});
+	}
+});
 
 $("#searchBtn").click(function(e){
 	e.preventDefault();
@@ -15,89 +32,130 @@ $("#searchBtn").click(function(e){
 		alert("Please wait while map is loading...");
 		return false;
 	}
-	//Add Loading
-	$("#searchBtn").prop('disabled', true);
-	$("#searchBtn").html("Loading...");
-	geopos = {
+  	geopos = {
 		lat: geolocate._lastKnownPosition.coords.latitude,
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
+	//Add Loading
+	$("#searchBtn").prop('disabled', true);
+	$("#searchBtn").html("Loading...");
 	var freeTime = parseInt($("#val").text());
-	var waypoints = "";
-	getNearWalk(geopos, freeTime).then(function(data) {
+	getNearWalk(geopos, freeTime).then(walkDataCallback);
+});
+
+var oneWalkCallback = function(data){
+	if(!data){
 		$("#searchBtn").prop('disabled', false);
 		$("#searchBtn").html("Search a walk");
-		if(data.error === undefined){
-			console.log(data);
+		return;
+	}
+	directions.removeRoutes();
+	directions.setOrigin([geopos.lon, geopos.lat]);
 
-			saveData = data;
-
-			let walks = "";
-			if(data.f !== null)
-				walks += "<li>Walk #1" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
-			if(data.w !== null)
-				walks += "<li>Walk #2" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
-			if(data.g !== null)
-				walks += "<li>Walk #3" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
-			$('#popupChoice ul').html(walks);
-
-			$(".walkDetail").click(function(e){
-				e.preventDefault();
-				waypoints = "";
-
-				switch($(this).attr("walk-type")){
-					case "f":
-						data = saveData.f;
-						break;
-					case "w":
-						data = saveData.w;
-						break;
-					case "g":
-						data = saveData.g;
-						break;
-				}
-				goUrl = data.walkId;
-				window.history.pushState("", "", 'index.html?id=' + goUrl);
-				
-				directions.removeRoutes();
-				directions.setOrigin([geopos.lon, geopos.lat]);
-
-				waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
-				for (var i = 0; i < data.poi.length; i++) {
-					if(data.poi[i].name === undefined){
-						data.poi[i].name = "Your position";
-					}
-					if(i == data.poi.length - 1){
-						//Last
-						allPos += data.poi[i].lon + "," + data.poi[i].lat;
-					}else{
-						allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
-					}
-		            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-		            waypoints += "<li>" + data.poi[i].name + "</li> \n";
-		        }
-		        directions.setDestination([geopos.lon, geopos.lat]);
-		        map.flyTo({
-		            center: [geopos.lon, geopos.lat],
-		            zoom: 13
-		        });
-	        	$('#popupList #listStyle').html(waypoints);
+	
+	data.poi = JSON.parse(data.path)
+	data.poi.unshift({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
+	data.poi.push({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
+	delete data.path;
+	delete data.provider;
 
 
-				$("#popupSearch").css("display", "none");
-				$("#popupChoice").css("display", "none");
-				$("#popupList").css("display", "block");
-			})
-		}else{
-        	$('#popupList #listStyle').html("I'm sorry but I found nothing interesting <br> You can suggest a walk at <a href='https://twitter.com/getwalkapp' target='_blank'>@getwalkapp</a>");
+	waypoints += "<li><b>" + data.duration + " min</b></li>";
+	for (var i = 0; i < data.poi.length; i++) {
+		if(data.poi[i].name === undefined){
+			data.poi[i].name = "Your position";
 		}
+		if(i == data.poi.length - 1){
+			//Last
+			allPos += data.poi[i].lon + "," + data.poi[i].lat;
+		}else{
+			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+		}
+        directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+        waypoints += "<li>" + data.poi[i].name + "</li> \n";
+    }
+    directions.setDestination([geopos.lon, geopos.lat]);
+    map.flyTo({
+        center: [geopos.lon, geopos.lat],
+        zoom: 13
+    });
+	$('#popupList #listStyle').html(waypoints);
 
-		$("#popupSearch").css("display", "none");
-		$("#popupChoice").css("display", "block");
-		$("#popupList").css("display", "none");
+	$("#popupSearch").css("display", "none");
+	$("#popupChoice").css("display", "none");
+	$("#popupList").css("display", "block");
+}
 
-	});
-});
+var walkDataCallback = function(data){
+	$("#searchBtn").prop('disabled', false);
+	$("#searchBtn").html("Search a walk");
+	if(data.error === undefined){
+		saveData = data;
+
+		let walks = "";
+		if(data.f !== null)
+			walks += "<li>Walk #1" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+		if(data.w !== null)
+			walks += "<li>Walk #2" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+		if(data.g !== null)
+			walks += "<li>Walk #3" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+		$('#popupChoice ul').html(walks);
+
+		$(".walkDetail").click(function(e){
+			e.preventDefault();
+			waypoints = "";
+
+			switch($(this).attr("walk-type")){
+				case "f":
+					data = saveData.f;
+					break;
+				case "w":
+					data = saveData.w;
+					break;
+				case "g":
+					data = saveData.g;
+					break;
+			}
+			goUrl = data.walkId;
+			window.history.pushState("", "", 'index.html?id=' + goUrl);
+			
+			directions.removeRoutes();
+			directions.setOrigin([geopos.lon, geopos.lat]);
+
+			waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
+			for (var i = 0; i < data.poi.length; i++) {
+				if(data.poi[i].name === undefined){
+					data.poi[i].name = "Your position";
+				}
+				if(i == data.poi.length - 1){
+					//Last
+					allPos += data.poi[i].lon + "," + data.poi[i].lat;
+				}else{
+					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+				}
+	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+	            waypoints += "<li>" + data.poi[i].name + "</li> \n";
+	        }
+	        directions.setDestination([geopos.lon, geopos.lat]);
+	        map.flyTo({
+	            center: [geopos.lon, geopos.lat],
+	            zoom: 13
+	        });
+        	$('#popupList #listStyle').html(waypoints);
+
+
+			$("#popupSearch").css("display", "none");
+			$("#popupChoice").css("display", "none");
+			$("#popupList").css("display", "block");
+		})
+	}else{
+    	$('#popupList #listStyle').html("I'm sorry but I found nothing interesting <br> You can suggest a walk at <a href='https://twitter.com/getwalkapp' target='_blank'>@getwalkapp</a>");
+	}
+
+	$("#popupSearch").css("display", "none");
+	$("#popupChoice").css("display", "block");
+	$("#popupList").css("display", "none");
+}
 
 $("#go").click(function(e){
 	e.preventDefault();
@@ -134,13 +192,6 @@ $("#go").click(function(e){
 			});
 		});
 	}
-	/*
-		On dirige vers une autre page dédiée avec :
-			* en haut prochaine direction & ETA, map zoomée sur l'utilisateur
-			* en bas lien pour partager la balade sur les réseaux sociaux & ouvrir dans Maps/Plans
-		* Réorganiser l'interface
-		* Identifier s'il y a un id & showList
-	*/
 });
 $(".cancel").click(function(e){
 	e.preventDefault();
@@ -153,6 +204,7 @@ $(".cancel").click(function(e){
 		$("#popupList").css("display", "none");
 		$("#popupSearch").css("display", "none");
 	}
+	window.history.pushState("", "", 'index.html');
 	directions.removeRoutes();
 });
 
@@ -178,31 +230,24 @@ function getDirections(allPos){
 	});
 }
 
-/*
-  TODO:
-    - Affiche une barre pour partager
-    - Vérifier si id dans le lien au chargement, dans ce cas on affiche direct popupList & on ask le server l'id
-  https://www.mapbox.com/help/getting-started-directions-api/
-*/
-
 function showCurrentDirection(){
-  geopos = {
+  	geopos = {
 		lat: geolocate._lastKnownPosition.coords.latitude,
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
-  let roundValue = 4; // Default is 4, else is for debug (such as 2)
-  // console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
-  // console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + "- LON: " + stepsLocation[0][0].toFixed(roundValue));
-  if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
-    $("#information").html(allSteps[1]);
-    allSteps.splice(0, 1);
-    stepsLocation.splice(0, 1);
+  	let roundValue = 4; // Default is 4, else is for debug (such as 2)
+	// console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
+	// console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + "- LON: " + stepsLocation[0][0].toFixed(roundValue));
+	if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
+		$("#information").html(allSteps[1]);
+		allSteps.splice(0, 1);
+		stepsLocation.splice(0, 1);
 
-  	map.flyTo({
-  		center: [geopos.lon, geopos.lat]
-  	});
+		map.flyTo({
+			center: [geopos.lon, geopos.lat]
+		});
 
-    console.log("Near!");
-  }
-  // TODO: let ETA = 2; // v = d/t <=> t = d/v  // https://stackoverflow.com/questions/7687884/add-10-seconds-to-a-javascript-date-object-timeobject
+		console.log("Near!");
+	}
+  	// TODO: let ETA = 2; // v = d/t <=> t = d/v  // https://stackoverflow.com/questions/7687884/add-10-seconds-to-a-javascript-date-object-timeobject
 }
