@@ -27,7 +27,18 @@ function getWalk(id){
 }
 
 function getWalkTimeline(city = false, position = false){
-	alert("Not implemented yet");
-	return false;
+	// By position
+	return $.ajax({
+		url: wrapperApi + "timeline",
+		type: "POST",
+		data: {
+			startLat: position.lat,
+			startLon: position.lon,
+		}
+	})
+	.done(function(data){
+		return data;
+	});
+
 	// By city or position
 }

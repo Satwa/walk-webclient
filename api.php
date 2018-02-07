@@ -21,6 +21,13 @@
                 }
 
                 break;
+            case 'timeline':
+                if(isset($_POST["startLon"]) && isset($_POST["startLat"])){
+                    echo callAPI("POST", "walk/timeline", $_POST);
+                }else{
+                    echo "{}";
+                }
+                break;
 			default:
 				# code...
 				break;

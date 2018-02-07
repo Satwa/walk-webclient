@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Near you - Walk</title> <!-- Redirect to index.html?id= -->
+		<meta charset="utf-8">
+		<meta name="description" content="Retreive existing walks near you. Discover new monuments with Walk!">
+		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+		<link rel="apple-touch-icon" href="assets/logoappi.png" />
+		<link rel="icon" type="image/png" href="https://walk.cafe/favicon.png" />
+
+		<link rel="stylesheet" href="assets/app.css">
+		<style>
+			#list{
+				font-size: 20px;
+				margin-top: 10px;
+			}
+			h3, h4{
+				text-align: center;
+				font-weight: normal;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- Logo -->
+		<div id="top" style="background:black;height:75px">
+			<a href="index.html" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;line-height:75px;font-size: 28px" alt="Home">🏠</a>
+			<img src="assets/icon.png" id="logo" style="z-index:99999">
+		</div>
+
+		<div id="list">
+			<h3>Here's what I can find near you</h3>
+			<h4 id="loading">Loading...</h4>
+			<ul></ul>
+		</div>
+
+
+
+    	<script
+			  src="https://code.jquery.com/jquery-3.2.1.min.js"
+			  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+			  crossorigin="anonymous"></script>
+		<script src="assets/api.js"></script>
+		<script src="assets/app.js"></script>
+		<script src="assets/near.js"></script>
+		<!-- Matomo -->
+		<script type="text/javascript">
+		  var _paq = _paq || [];
+		  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+		  _paq.push(['trackPageView']);
+		  _paq.push(['enableLinkTracking']);
+		  (function() {
+		    var u="//www.joshua.ovh/matomo/";
+		    _paq.push(['setTrackerUrl', u+'piwik.php']);
+		    _paq.push(['setSiteId', '4']);
+		    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+		    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+		  })();
+		</script>
+		<!-- End Matomo Code -->
+	</body>
+</html>
