@@ -91,9 +91,6 @@ var oneWalkCallback = function(data){
 		return;
 	}
 	_paq.push(['trackEvent', 'Load', 'Loading specific walk', data.id]);
-	directions.removeRoutes();
-	directions.setOrigin([geopos.lon, geopos.lat]);
-
 	
 	data.poi = JSON.parse(data.path)
 	data.poi.unshift({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
@@ -101,32 +98,39 @@ var oneWalkCallback = function(data){
 	delete data.path;
 	delete data.provider;
 	$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + data.id)
+	
+	map.once("load", () => {
+		console.log("rendered")
+		waypoints += "<li><b>" + data.duration + " min</b></li>";
+		directions.removeRoutes();
+		directions.setOrigin([geopos.lon, geopos.lat]);
+
+		for (var i = 0; i < data.poi.length; i++) {
+			if(data.poi[i].name === undefined){
+				data.poi[i].name = "Your position";
+			}
+			if(i == data.poi.length - 1){
+				//Last
+				allPos += data.poi[i].lon + "," + data.poi[i].lat;
+			}else{
+				allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+			}
+	        directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+	        waypoints += "<li>" + data.poi[i].name + "</li> \n";
+	    }
+	    directions.setDestination([geopos.lon, geopos.lat]);
+	    map.flyTo({
+	        center: [geopos.lon, geopos.lat],
+	        zoom: 13
+	    });
+		$('#popupList #listStyle').html(waypoints);
+		$("#popupSearch").css("display", "none");
+		$("#popupChoice").css("display", "none");
+		$("#popupList").css("display", "block");
+	})
 
 
-	waypoints += "<li><b>" + data.duration + " min</b></li>";
-	for (var i = 0; i < data.poi.length; i++) {
-		if(data.poi[i].name === undefined){
-			data.poi[i].name = "Your position";
-		}
-		if(i == data.poi.length - 1){
-			//Last
-			allPos += data.poi[i].lon + "," + data.poi[i].lat;
-		}else{
-			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
-		}
-        directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-        waypoints += "<li>" + data.poi[i].name + "</li> \n";
-    }
-    directions.setDestination([geopos.lon, geopos.lat]);
-    map.flyTo({
-        center: [geopos.lon, geopos.lat],
-        zoom: 13
-    });
-	$('#popupList #listStyle').html(waypoints);
 
-	$("#popupSearch").css("display", "none");
-	$("#popupChoice").css("display", "none");
-	$("#popupList").css("display", "block");
 }
 
 var walkDataCallback = function(data){
