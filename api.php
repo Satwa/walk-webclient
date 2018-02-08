@@ -19,11 +19,17 @@
                 }else{
                     echo "{}";
                 }
-
                 break;
             case 'timeline':
                 if(isset($_POST["startLon"]) && isset($_POST["startLat"])){
                     echo callAPI("POST", "walk/timeline", $_POST);
+                }else{
+                    echo "{}";
+                }
+                break;
+            case 'saveWalk':
+                if(isset($_GET['id'])){
+                    echo callAPI("GET", "walk/".$_GET['id']."/share");
                 }else{
                     echo "{}";
                 }

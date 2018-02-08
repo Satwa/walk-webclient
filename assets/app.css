@@ -55,6 +55,8 @@ img#logo{
 
 *:focus{outline: none;}
 
+#clipboard{ display:none; }
+
 .slider {
     -webkit-appearance: none;
     width: 80%;

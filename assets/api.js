@@ -42,3 +42,11 @@ function getWalkTimeline(city = false, position = false){
 
 	// By city or position
 }
+
+function saveUserChoice(id){
+	return $.ajax({
+		url: wrapperApi + "saveWalk&id=" + id,
+		type: "GET"
+	})
+	.done((data) => {return data})
+}

@@ -2,6 +2,11 @@ $('#val').html($("#freeTime").val());
 $(document).on('input', '#freeTime', function() {
     $('#val').html($(this).val());
 });
+let clipboard = new Clipboard('#clipboard');
+clipboard.on('success', (e) => {
+	alert("The link has been copied to clipboard, feel free to share it with your friends!")
+})
+
 let goUrl, geopos
 let allPos = ""
 let allSteps = [],
@@ -95,6 +100,7 @@ var oneWalkCallback = function(data){
 	data.poi.push({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
 	delete data.path;
 	delete data.provider;
+	$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + data.id)
 
 
 	waypoints += "<li><b>" + data.duration + " min</b></li>";
@@ -160,7 +166,8 @@ var walkDataCallback = function(data){
 			}
 			goUrl = data.walkId;
 			window.history.pushState("", "", 'index.html?id=' + goUrl);
-			
+			$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + goUrl)
+
 			directions.removeRoutes();
 			directions.setOrigin([geopos.lon, geopos.lat]);
 
@@ -202,6 +209,7 @@ var walkDataCallback = function(data){
 $("#go").click(function(e){
 	e.preventDefault();
 	$("#nearLink").css("display", "none");
+	$("#clipboard").css("display", "block");
 	var noSleep = new NoSleep();
 	noSleep.enable();
 
@@ -210,8 +218,14 @@ $("#go").click(function(e){
 	$("#information").css("display", "block");
 	$("#map").css("height", "100vh");
 
+	// On enregistre le choix de l'utilisateur
+	// Si goUrl undefined => on est dans le cas d'une balade partagée donc déjà publique
+	if(goUrl !== undefined){
+		saveUserChoice(goUrl)
+	}
+
+
   	directionsInfo = getDirections(allPos);
-  	console.log(goUrl)
   	_paq.push(['trackEvent', 'Click', 'Started walk', goUrl]);
 
 	map.resize();
@@ -273,7 +287,7 @@ function getDirections(allPos){
    	let i = 0, name;
 		steps.forEach(function(step) {
 	    	i++;
-	    	//console.log(step)
+
 	    	if(step.maneuver.modifier){
 	    		// Le modifier existe
 	    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier + ".png"
@@ -283,9 +297,9 @@ function getDirections(allPos){
 	    	stepsIcon.push(name); // All steps icon
 		 	allSteps.push(step.maneuver.instruction); // All steps instruction 
 		 	stepsLocation.push(step.maneuver.location); // All steps position
+		 	
 		 	if(i == steps.length){
 		        $("#information").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0]);
-		        //console.log(allSteps);
 		        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 		 	}
 		});

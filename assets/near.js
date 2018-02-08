@@ -20,7 +20,7 @@ $(document).ready(function(){
 				for(let x = 0; x < data[i].poi.length; x++){
 					visualData += data[i].poi[x].name + "<br>"
 				}
-				visualData += "<a href='index.html?id=" + data[i].id + "' style='margin-right:10px;float:right;color:#007AFF;cursor:pointer;'>Go</a>"
+				visualData += "<a onclick='window.location=\"index.html?id=" + data[i].id + "\"' style='margin-right:10px;float:right;color:#007AFF;cursor:pointer;'>Go</a>"
 				visualData += "<div style='clear:both'></div></div>"
 
 				walks += "<li> " + data[i].duration + " minutes, " + data[i].poi.length + " monuments  <a class='more' id='" + data[i].id + "' style='float:right;margin-right: 10px;color:#007AFF;cursor:pointer;'>More</a> " + visualData + " </li>"
