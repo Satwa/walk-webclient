@@ -2,12 +2,16 @@ $('#val').html($("#freeTime").val());
 $(document).on('input', '#freeTime', function() {
     $('#val').html($(this).val());
 });
-var goUrl, geopos;
-var allPos = "";
-var allSteps = [],
-    stepsLocation = [];
-var saveData;
-var waypoints = "";
+let goUrl, geopos
+let allPos = ""
+let allSteps = [],
+    stepsLocation = [],
+    stepsIcon = []
+let saveData
+let waypoints = ""
+let loadedWalk = false
+
+let imageStorage = "https://app.walk.cafe/mapbox-directions/"
 
 // App.js
 mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA";
@@ -52,6 +56,7 @@ $(document).ready(function(){
 				lat: position.coords.latitude,
 				lon: position.coords.longitude
 			};
+			loadedWalk = true
 			getWalk(getUrlParameter('id')).then(oneWalkCallback).catch((e) => console.error(e))
 		});
 	}
@@ -80,6 +85,7 @@ var oneWalkCallback = function(data){
 		$("#searchBtn").html("Search a walk");
 		return;
 	}
+	_paq.push(['trackEvent', 'Load', 'Loading specific walk', data.id]);
 	directions.removeRoutes();
 	directions.setOrigin([geopos.lon, geopos.lat]);
 
@@ -122,14 +128,19 @@ var walkDataCallback = function(data){
 	$("#searchBtn").html("Search a walk");
 	if(data.error === undefined){
 		saveData = data;
-
+		let i = 1
 		let walks = "";
-		if(data.f !== null)
-			walks += "<li>Walk #1" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
-		if(data.w !== null)
-			walks += "<li>Walk #2" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
-		if(data.g !== null)
-			walks += "<li>Walk #3" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+		if(data.f.poi !== undefined){
+			walks += "<li>Walk #" + i + " (" + data.f.duration + "min, " + (data.f.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			i++
+		}
+		if(data.w.poi !== undefined){
+			walks += "<li>Walk #" + i + " (" + data.w.duration + "min, " + (data.w.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			i++
+		}
+		if(data.g.poi !== undefined){
+			walks += "<li>Walk #" + i + " (" + data.g.duration + "min, " + (data.g.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+		}
 		$('#popupChoice ul').html(walks);
 
 		$(".walkDetail").click(function(e){
@@ -192,13 +203,15 @@ $("#go").click(function(e){
 	e.preventDefault();
 	var noSleep = new NoSleep();
 	noSleep.enable();
-	//window.location.replace("directions.html?id=" + goUrl);
+
 	$("#popupSearch").css("display", "none");
 	$("#popupList").css("display", "none");
 	$("#information").css("display", "block");
 	$("#map").css("height", "100vh");
 
   	directionsInfo = getDirections(allPos);
+  	console.log(goUrl)
+  	_paq.push(['trackEvent', 'Click', 'Started walk', goUrl]);
 
 	map.resize();
 	map.flyTo({
@@ -235,6 +248,15 @@ $(".cancel").click(function(e){
 		$("#popupList").css("display", "none");
 		$("#popupSearch").css("display", "none");
 	}
+	if(loadedWalk){
+		$("#searchBtn").prop('disabled', false);
+		$("#searchBtn").html("Search a walk");
+		$("#popupChoice").css("display", "none");
+		$("#popupList").css("display", "none");
+		$("#popupSearch").css("display", "block");
+		loadedWalk = false
+	}
+
 	window.history.pushState("", "", 'index.html');
 	directions.removeRoutes();
 });
@@ -247,13 +269,21 @@ function getDirections(allPos){
 	})
 	.done(function(data){
    	var steps = data.routes[0].legs[0].steps;
-   	let i = 0;
+   	let i = 0, name;
 		steps.forEach(function(step) {
 	    	i++;
-		 	allSteps.push(step.maneuver.instruction);
-		 	stepsLocation.push(step.maneuver.location);
+	    	//console.log(step)
+	    	if(step.maneuver.modifier){
+	    		// Le modifier existe
+	    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier + ".png"
+	    	}else{
+	    		name = "direction_" + step.maneuver.type + ".png"
+	    	}
+	    	stepsIcon.push(name); // All steps icon
+		 	allSteps.push(step.maneuver.instruction); // All steps instruction 
+		 	stepsLocation.push(step.maneuver.location); // All steps position
 		 	if(i == steps.length){
-		        $("#information").html(allSteps[0]);
+		        $("#information").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0]);
 		        //console.log(allSteps);
 		        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 		 	}
@@ -270,7 +300,11 @@ function showCurrentDirection(){
 	// console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
 	// console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + "- LON: " + stepsLocation[0][0].toFixed(roundValue));
 	if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
-		$("#information").html(allSteps[1]);
+		// On met à jour l'affichage
+		$("#information").html("<img src='" + imageStorage + stepsIcon[1] + "'>" + allSteps[1]);
+		
+		// On retire de l'array
+		stepsIcon.splice(0, 1);
 		allSteps.splice(0, 1);
 		stepsLocation.splice(0, 1);
 

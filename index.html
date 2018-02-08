@@ -5,6 +5,8 @@
 		<meta charset="utf-8">
 		<meta name="description" content="The new way to discover cool monuments near you!">
 		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes">
 		<link rel="apple-touch-icon" href="assets/logoappi.png" />
 		<link rel="icon" type="image/png" href="https://walk.cafe/favicon.png" />
     	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
@@ -14,9 +16,10 @@
 	</head>
 	<body>
 		<!-- Logo -->
+		<a href="near.html" style="color:#007AFF;cursor:pointer;line-height:75px;font-size: 28px;position:absolute;right:10px;z-index:99999" alt="Near">🗺️</a>
 		<img src="assets/icon.png" id="logo" style="z-index:99999">
 
-		<!-- Search walk // POI List -->
+		<!-- Search walk -->
 		<div id="popupSearch">
 			<center>
 				<p>I have <b><span id="val">30</span> minutes</b></p>
@@ -24,6 +27,7 @@
 				<button id="searchBtn">Search a walk</button>
 			</center>
 		</div>
+		<!-- Walks list -->
 		<div id="popupChoice">
 			<p>
 				<a class="cancel" cancel="search" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a>
@@ -33,11 +37,12 @@
 				
 			</ul>
 		</div>
+		<!-- POI List -->
 		<div id="popupList">
 			<p>
 				<a class="cancel" cancel="choice" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;">Cancel</a>
 				<span style="text-align: center;">Here's your walk</span>
-				<a id="go" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;">Go</a>
+				<a id="go" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;" onclick="_paq.push(['trackEvent', 'Click', 'Go Button']);">Go</a>
 			</p>
 			<ul id="listStyle">
 

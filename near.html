@@ -4,6 +4,8 @@
 		<title>Near you - Walk</title> <!-- Redirect to index.html?id= -->
 		<meta charset="utf-8">
 		<meta name="description" content="Retreive existing walks near you. Discover new monuments with Walk!">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes">
 		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 		<link rel="apple-touch-icon" href="assets/logoappi.png" />
 		<link rel="icon" type="image/png" href="https://walk.cafe/favicon.png" />
@@ -13,16 +15,25 @@
 			#list{
 				font-size: 20px;
 				margin-top: 10px;
+				overflow-y: scroll;
+				position: fixed;
+				top:75px;left:0;right:0;bottom: 0;
 			}
 			h3, h4{
 				text-align: center;
 				font-weight: normal;
 			}
+			.visual{
+				display: none;
+				margin-left: 10px;
+				padding-left:0px; 
+				border-left: 5px solid gray;
+			}
 		</style>
 	</head>
 	<body>
 		<!-- Logo -->
-		<div id="top" style="background:black;height:75px">
+		<div id="top" style="background:black;height:75px;">
 			<a href="index.html" style="float:left;margin-left: 10px;color:#007AFF;cursor:pointer;line-height:75px;font-size: 28px" alt="Home">🏠</a>
 			<img src="assets/icon.png" id="logo" style="z-index:99999">
 		</div>
