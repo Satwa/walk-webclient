@@ -201,6 +201,7 @@ var walkDataCallback = function(data){
 
 $("#go").click(function(e){
 	e.preventDefault();
+	$("#nearLink").css("display", "none");
 	var noSleep = new NoSleep();
 	noSleep.enable();
 
