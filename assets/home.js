@@ -394,17 +394,12 @@ function getDirections(allPos){
 			 	if(i == leg.steps.length){
 			 		_time.setTime(_time.getTime() + stepsDuration.reduce(reducer)*1000)
 			        $("#information #current").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
-			        
-			        for(let x = 0; x < allSteps.length; x++){
-						allStepsInfo += "<li>" + "<img src='" + imageStorage + stepsIcon[x] + "'>" + allSteps[x] + "</li>"
-						$("#information #all").css("display", "none").html(allStepsInfo)
-					}
 
 			        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 			 	}
 	   		})
 	   		if(index == array.length-1){
-		        for(let x = 0; x < allSteps.length; x++){
+		        for(let x = 1; x < allSteps.length; x++){
 					allStepsInfo += "<li>" + "<img src='" + imageStorage + stepsIcon[x] + "'>" + allSteps[x] + "</li>"
 					$("#information #all").css("display", "none").html(allStepsInfo)
 				}
@@ -424,8 +419,7 @@ function showCurrentDirection(){
 	
 	// On met toujours à jour par sécurité, si y'a un bouchon sur le trottoir
 	_time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
-	$("#information #current").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
-	
+	$("#information #current span").html(_time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}))
 
 	if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
 		// On met à jour l'affichage
@@ -441,7 +435,7 @@ function showCurrentDirection(){
 		stepsLocation.splice(0, 1);
 
 		allStepsInfo = ""
- 		for(let x = 0; x < allSteps.length; x++){
+ 		for(let x = 1; x < allSteps.length; x++){
 			allStepsInfo += "<li>" + "<img src='" + imageStorage + stepsIcon[x] + "'>" + allSteps[x] + "</li>"
 			$("#information #all").css("display", "none").html(allStepsInfo)
 		}
@@ -457,17 +451,11 @@ function showCurrentDirection(){
 let infoState = 0
 $("#information").click((e) => {
 	if(infoState === 0){
-		/*$("#information").animate({
-			top: "100px"
-		})*/
 		infoState = 1
 		$("#information #all").css("border-bottom", "2px solid #CCC")
 		$("#information #all").slideUp()
 	}else{
 		$("#information #all").slideDown()
-		/*$("#information").animate({
-			top: "intial",
-		})*/
 		infoState = 0
 	}
 })
