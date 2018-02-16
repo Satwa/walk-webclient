@@ -118,14 +118,16 @@ var oneWalkCallback = function(data){
 		if(data.poi[i].name === undefined){
 			data.poi[i].name = "Your position";
 		}
+		if(data.poi[i].name !== "Your position") addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
 		if(i == data.poi.length - 1){
 			//Last
 			allPos += data.poi[i].lon + "," + data.poi[i].lat;
+			displayMapMarker()
 		}else{
 			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 		}
         directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-        waypoints += "<li>" + data.poi[i].name + "</li> \n";
+        waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
     }
     directions.setDestination([geopos.lon, geopos.lat]);
     map.flyTo({
@@ -187,14 +189,17 @@ var walkDataCallback = function(data){
 				if(data.poi[i].name === undefined){
 					data.poi[i].name = "Your position";
 				}
+
+				if(data.poi[i].name !== "Your position") addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
 				if(i == data.poi.length - 1){
 					//Last
 					allPos += data.poi[i].lon + "," + data.poi[i].lat;
+					displayMapMarker()
 				}else{
 					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 				}
 	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-	            waypoints += "<li>" + data.poi[i].name + "</li> \n";
+	            waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
 	        }
 	        directions.setDestination([geopos.lon, geopos.lat]);
 	        map.flyTo({
@@ -202,7 +207,6 @@ var walkDataCallback = function(data){
 	            zoom: 13
 	        });
         	$('#popupList #listStyle').html(waypoints);
-
 
 			$("#popupSearch").css("display", "none");
 			$("#popupChoice").css("display", "none");
@@ -215,11 +219,80 @@ var walkDataCallback = function(data){
 		$("#popupSearch").css("display", "none");
 		$("#popupChoice").css("display", "block");
 		$("#popupList").css("display", "none");
-
 }
 
+let markersList = [], uniqid
+let addMapMarker = (lon, lat, title, index) => {
+	markersList.push({
+		"type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [lon, lat]
+        },
+        "properties": {
+            "title": index + " - " + title.replace(/<br\s*[\/]?>/gi, " "),
+            "icon": "monument",
+            /*"description": "Ea minim duis anim fugiat nostrud elit incididunt dolore ut."*/
+        }
+	})
+} 
+
+let displayMapMarker = () => {
+	uniqid = Math.floor(Math.random() * Math.floor(300))
+	map.addLayer({
+		"id": "places" + uniqid,
+		"type": "symbol",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": markersList
+            }
+        },
+	    "layout": {
+	        "icon-image": "{icon}-15",
+	        "text-field": "{title}",
+	        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+	        "text-offset": [0, 0.6],
+	        "text-anchor": "top",
+            "icon-allow-overlap": true,
+            "text-size": 12
+	    }
+	})
+}
+
+/*
+	LATER: Informations à propos du POI
+map.on('click', 'places', function (e) {
+    var coordinates = e.features[0].geometry.coordinates.slice();
+    var description = e.features[0].properties.description;
+
+    // Ensure that if the map is zoomed out such that multiple
+    // copies of the feature are visible, the popup appears
+    // over the copy being pointed to.
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+
+    new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(description)
+        .addTo(map);
+});
+
+// Change the cursor to a pointer when the mouse is over the places layer.
+map.on('mouseenter', 'places', function () {
+    map.getCanvas().style.cursor = 'pointer';
+});
+
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'places', function () {
+    map.getCanvas().style.cursor = '';
+});
+*/
+
 $("#go").click(function(e){
-	e.preventDefault();
+	e.preventDefault()
 	$("#nearLink").css("display", "none");
 	$("#clipboard").css("display", "block");
 	var noSleep = new NoSleep();
@@ -282,6 +355,7 @@ $(".cancel").click(function(e){
 		$("#popupList").css("display", "none");
 		$("#popupSearch").css("display", "block");
 		loadingWalk = false
+		map.removeLayer("places" + uniqid)
 	}
 
 	window.history.pushState("", "", 'index.html');
@@ -290,6 +364,8 @@ $(".cancel").click(function(e){
 
 let reducer = (acc, cntVal) => acc + cntVal
 let _time = new Date()
+let allStepsInfo = ""
+
 
 function getDirections(allPos){
 	$.ajax({
@@ -300,13 +376,13 @@ function getDirections(allPos){
 		// console.log(data)
 	   	var legs = data.routes[0].legs
 	   	let i = 0, name
-	   	legs.forEach((leg) => {
+	   	legs.forEach((leg, index, array) => {
 	   		leg.steps.forEach((step) => {
 	   			i++
 
 		    	if(step.maneuver.modifier){
 		    		// Le modifier existe
-		    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier + ".png"
+		    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier.replace(/ /g,"_") + ".png"
 		    	}else{
 		    		name = "direction_" + step.maneuver.type + ".png"
 		    	}
@@ -317,10 +393,22 @@ function getDirections(allPos){
 
 			 	if(i == leg.steps.length){
 			 		_time.setTime(_time.getTime() + stepsDuration.reduce(reducer)*1000)
-			        $("#information").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
+			        $("#information #current").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
+			        
+			        for(let x = 0; x < allSteps.length; x++){
+						allStepsInfo += "<li>" + "<img src='" + imageStorage + stepsIcon[x] + "'>" + allSteps[x] + "</li>"
+						$("#information #all").css("display", "none").html(allStepsInfo)
+					}
+
 			        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 			 	}
 	   		})
+	   		if(index == array.length-1){
+		        for(let x = 0; x < allSteps.length; x++){
+					allStepsInfo += "<li>" + "<img src='" + imageStorage + stepsIcon[x] + "'>" + allSteps[x] + "</li>"
+					$("#information #all").css("display", "none").html(allStepsInfo)
+				}
+	   		}
 	   	})
 	});
 }
@@ -336,7 +424,7 @@ function showCurrentDirection(){
 	
 	// On met toujours à jour par sécurité, si y'a un bouchon sur le trottoir
 	_time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
-	$("#information").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
+	$("#information #current").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
 	
 
 	if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
@@ -345,12 +433,19 @@ function showCurrentDirection(){
 		stepsDuration.splice(0, 1)
 		_time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
 
-		$("#information").html("<img src='" + imageStorage + stepsIcon[1] + "'>" + allSteps[1] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
+		$("#information #current").html("<img src='" + imageStorage + stepsIcon[1] + "'>" + allSteps[1] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
 		
 		// On retire de l'array
 		stepsIcon.splice(0, 1);
 		allSteps.splice(0, 1);
 		stepsLocation.splice(0, 1);
+
+		allStepsInfo = ""
+ 		for(let x = 0; x < allSteps.length; x++){
+			allStepsInfo += "<li>" + "<img src='" + imageStorage + stepsIcon[x] + "'>" + allSteps[x] + "</li>"
+			$("#information #all").css("display", "none").html(allStepsInfo)
+		}
+
 
 		map.flyTo({
 			center: [geopos.lon, geopos.lat]
@@ -359,3 +454,20 @@ function showCurrentDirection(){
 		console.log("Near!");
 	}
 }
+let infoState = 0
+$("#information").click((e) => {
+	if(infoState === 0){
+		/*$("#information").animate({
+			top: "100px"
+		})*/
+		infoState = 1
+		$("#information #all").css("border-bottom", "2px solid #CCC")
+		$("#information #all").slideUp()
+	}else{
+		$("#information #all").slideDown()
+		/*$("#information").animate({
+			top: "intial",
+		})*/
+		infoState = 0
+	}
+})

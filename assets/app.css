@@ -28,9 +28,9 @@ body{
     overflow: scroll;
 }
 #popupList, #popupChoice{ display: none; padding:0; padding-bottom: 8px;}
-#popupList ul, #popupChoice ul, #list ul{ padding:0; }
+#popupList ul, #popupChoice ul, #list ul, #information ul{ padding:0; }
 #popupList p, #popupChoice p{ text-align: center; font-size: 18px; border-bottom:2px solid lightgray; padding-bottom: 8px; }
-#popupList ul li, #popupChoice ul li, #list ul li{
+#popupList ul li, #popupChoice ul li, #list ul li, #information ul li{
     list-style-type: none;
     padding:0;
     margin:0;
@@ -39,6 +39,8 @@ body{
     border-bottom: 1px solid lightgray;
     text-indent: 10px;
 }
+
+#information #all{overflow: scroll;text-align:left;}
 
 img#logo{
 	position: absolute;
