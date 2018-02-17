@@ -325,20 +325,10 @@ $("#go").click(function(e){
 	});
 
 	if(window.DeviceOrientationEvent) {
-		window.addEventListener('deviceorientation', function(event){
-			console.log("triggered");
-			let compassdir;
-			if(event.webkitCompassHeading){
-			    compassdir = event.webkitCompassHeading;
-		  	}else{
-		    	compassdir = event.alpha;
-		  	}
-			map.easeTo({
-				center: [geopos.lon, geopos.lat],
-		        pitch: 60,
-			    bearing: compassdir,
-			});
-		});
+		// Si l'orientation est disponible, on displayBlock le bouton de rotation 🔄.
+		// Quand on clique dessus, on supprime l'event handler + opacity.5, si on clique à nouveau, on le crée
+		$("#disableCompass").css("display", "block")
+		rotationEvent()
 	}
 });
 $(".cancel").click(function(e){
@@ -366,6 +356,38 @@ $(".cancel").click(function(e){
 	window.history.pushState("", "", 'index.html');
 	directions.removeRoutes();
 });
+
+$("#disableCompass").click((e) => rotationEvent())
+
+let rotationEventCallback = (event) => {
+	let compassdir;
+	if(event.webkitCompassHeading){
+	    compassdir = event.webkitCompassHeading;
+  	}else{
+    	compassdir = event.alpha;
+  	}
+	map.easeTo({
+		center: [geopos.lon, geopos.lat],
+        pitch: 60,
+	    bearing: compassdir,
+	});
+}
+
+let activate = 1
+let rotationEvent = () => {
+	if(activate){
+		// On le crée
+		window.addEventListener('deviceorientation', rotationEventCallback);
+		activate = 0
+		$("#disableCompass").css("opacity", "1")
+	}else{
+		// On le supprime
+		$("#disableCompass").css("opacity", ".5")
+		window.removeEventListener('deviceorientation', rotationEventCallback)
+		activate = 1
+	}
+}
+
 
 let reducer = (acc, cntVal) => acc + cntVal
 let _time = new Date()
