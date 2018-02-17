@@ -7,46 +7,68 @@ _clipboard.on('success', (e) => {
 	alert("The link has been copied to clipboard, feel free to share it with your friends!")
 })
 
-let goUrl, geopos
-let allPos = ""
-let allSteps = [],
+let goUrl, geopos,
+	allPos = "",
+	allSteps = [],
     stepsLocation = [],
     stepsIcon = [],
-    stepsDuration = []
-let saveData
-let waypoints = ""
-let loadingWalk = false
-let loadWalkInterval
-
-let imageStorage = "https://app.walk.cafe/mapbox-directions/"
+    stepsDuration = [],
+	saveData,
+	waypoints = "",
+	loadingWalk = false,
+	loadWalkInterval,
+	imageStorage = "https://app.walk.cafe/mapbox-directions/",
+	markersList = []
 
 // App.js
-mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA";
+mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA"
 
-var map = new mapboxgl.Map({
+let map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v9?optimize=true',
     zoom: 8,
 });
 
-var geolocate = new mapboxgl.GeolocateControl({
+let geolocate = new mapboxgl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
     },
     trackUserLocation: true
 });
-var directions = new MapboxDirections({
+let directions = new MapboxDirections({
 	accessToken: mapboxgl.accessToken,
     unit: 'metric',
     profile: 'walking',
     interactive: false
 });
 
-
 map.addControl(geolocate);
 map.addControl(directions, 'top-left');
 setTimeout(geolocate._onClickGeolocate.bind(geolocate), 100);
 
+
+map.once('load', () => {
+	map.addLayer({
+		"id": "places",
+		"type": "symbol",
+	    "source": {
+	        "type": "geojson",
+	        "data": {
+	            "type": "FeatureCollection",
+	            "features": markersList
+	        }
+	    },
+	    "layout": {
+	        "icon-image": "{icon}-15",
+	        "text-field": "{title}",
+	        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+	        "text-offset": [0, 0.6],
+	        "text-anchor": "top",
+	        "icon-allow-overlap": true,
+	        "text-size": 12
+	    }
+	})
+})
 
 
 // Home.js
@@ -91,11 +113,11 @@ $("#searchBtn").click(function(e){
 	//Add Loading
 	$("#searchBtn").prop('disabled', true);
 	$("#searchBtn").html("Loading...");
-	var freeTime = parseInt($("#val").text());
+	let freeTime = parseInt($("#val").text());
 	getNearWalk(geopos, freeTime).then(walkDataCallback);
 });
 
-var oneWalkCallback = function(data){
+let oneWalkCallback = function(data){
 	if(!data){
 		$("#searchBtn").prop('disabled', false);
 		$("#searchBtn").html("Search a walk");
@@ -114,7 +136,7 @@ var oneWalkCallback = function(data){
 	directions.removeRoutes();
 	directions.setOrigin([geopos.lon, geopos.lat]);
 
-	for (var i = 0; i < data.poi.length; i++) {
+	for (let i = 0; i < data.poi.length; i++) {
 		if(data.poi[i].name === undefined){
 			data.poi[i].name = "Your position";
 		}
@@ -141,7 +163,7 @@ var oneWalkCallback = function(data){
 
 }
 
-var walkDataCallback = function(data){
+let walkDataCallback = function(data){
 	$("#searchBtn").prop('disabled', false);
 	$("#searchBtn").html("Search a walk");
 
@@ -185,7 +207,7 @@ var walkDataCallback = function(data){
 			directions.setOrigin([geopos.lon, geopos.lat]);
 
 			waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
-			for (var i = 0; i < data.poi.length; i++) {
+			for (let i = 0; i < data.poi.length; i++) {
 				if(data.poi[i].name === undefined){
 					data.poi[i].name = "Your position";
 				}
@@ -221,7 +243,6 @@ var walkDataCallback = function(data){
 		$("#popupList").css("display", "none");
 }
 
-let markersList = [], uniqid
 let addMapMarker = (lon, lat, title, index) => {
 	markersList.push({
 		"type": "Feature",
@@ -238,34 +259,17 @@ let addMapMarker = (lon, lat, title, index) => {
 } 
 
 let displayMapMarker = () => {
-	uniqid = Math.floor(Math.random() * Math.floor(300))
-	map.addLayer({
-		"id": "places" + uniqid,
-		"type": "symbol",
-        "source": {
-            "type": "geojson",
-            "data": {
-                "type": "FeatureCollection",
-                "features": markersList
-            }
-        },
-	    "layout": {
-	        "icon-image": "{icon}-15",
-	        "text-field": "{title}",
-	        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-	        "text-offset": [0, 0.6],
-	        "text-anchor": "top",
-            "icon-allow-overlap": true,
-            "text-size": 12
-	    }
-	})
+	map.getSource("places").setData({
+        "type": "FeatureCollection",
+        "features": markersList
+    })
 }
 
 /*
 	LATER: Informations à propos du POI
 map.on('click', 'places', function (e) {
-    var coordinates = e.features[0].geometry.coordinates.slice();
-    var description = e.features[0].properties.description;
+    let coordinates = e.features[0].geometry.coordinates.slice();
+    let description = e.features[0].properties.description;
 
     // Ensure that if the map is zoomed out such that multiple
     // copies of the feature are visible, the popup appears
@@ -295,7 +299,7 @@ $("#go").click(function(e){
 	e.preventDefault()
 	$("#nearLink").css("display", "none");
 	$("#clipboard").css("display", "block");
-	var noSleep = new NoSleep();
+	let noSleep = new NoSleep();
 	noSleep.enable();
 
 	$("#popupSearch").css("display", "none");
@@ -355,8 +359,9 @@ $(".cancel").click(function(e){
 		$("#popupList").css("display", "none");
 		$("#popupSearch").css("display", "block");
 		loadingWalk = false
-		map.removeLayer("places" + uniqid)
 	}
+	markersList = []
+	displayMapMarker()
 
 	window.history.pushState("", "", 'index.html');
 	directions.removeRoutes();
@@ -374,7 +379,7 @@ function getDirections(allPos){
 	})
 	.done(function(data){
 		// console.log(data)
-	   	var legs = data.routes[0].legs
+	   	let legs = data.routes[0].legs
 	   	let i = 0, name
 	   	legs.forEach((leg, index, array) => {
 	   		leg.steps.forEach((step) => {
@@ -395,7 +400,7 @@ function getDirections(allPos){
 			 		_time.setTime(_time.getTime() + stepsDuration.reduce(reducer)*1000)
 			        $("#information #current").html("<img src='" + imageStorage + stepsIcon[0] + "'>" + allSteps[0] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
 
-			        var instructionTimeout = window.setInterval(showCurrentDirection, 1000);
+			        let instructionTimeout = window.setInterval(showCurrentDirection, 1000);
 			 	}
 	   		})
 	   		if(index == array.length-1){
