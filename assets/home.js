@@ -308,8 +308,6 @@ $("#go").click(function(e){
 	e.preventDefault()
 	$("#nearLink").css("display", "none");
 	$("#clipboard").css("display", "block");
-	let noSleep = new NoSleep();
-	noSleep.enable();
 
 	$("#popupSearch").css("display", "none");
 	$("#popupList").css("display", "none");
