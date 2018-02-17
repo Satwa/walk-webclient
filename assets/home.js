@@ -23,7 +23,7 @@ let goUrl, geopos,
 // App.js
 mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA"
 
-let map = new mapboxgl.Map({
+let _map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v9?optimize=true',
     zoom: 8,
@@ -42,13 +42,13 @@ let directions = new MapboxDirections({
     interactive: false
 });
 
-map.addControl(geolocate);
-map.addControl(directions, 'top-left');
+_map.addControl(geolocate);
+_map.addControl(directions, 'top-left');
 setTimeout(geolocate._onClickGeolocate.bind(geolocate), 100);
 
 
-map.once('load', () => {
-	map.addLayer({
+_map.once('load', () => {
+	_map.addLayer({
 		"id": "places",
 		"type": "symbol",
 	    "source": {
@@ -85,12 +85,12 @@ $(document).ready(function(){
 });
 
 let renderOneWalk = () => {
-	// Fonction qui est appelée tant que map.loaded() = false
+	// Fonction qui est appelée tant que _map.loaded() = false
 	if(!loadingWalk){
 		loadingWalk = true
 		loadWalkInterval = setInterval(renderOneWalk, 300)
 	}
-	if(map.loaded()){
+	if(_map.loaded()){
 		geopos = {
 			lat: geolocate._lastKnownPosition.coords.latitude,
 			lon: geolocate._lastKnownPosition.coords.longitude
@@ -140,11 +140,15 @@ let oneWalkCallback = function(data){
 		if(data.poi[i].name === undefined){
 			data.poi[i].name = "Your position";
 		}
-		if(data.poi[i].name !== "Your position") addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+		
+
+		if(data.poi[i].name !== "Your position"){ 
+			addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+		}
+
 		if(i == data.poi.length - 1){
 			//Last
 			allPos += data.poi[i].lon + "," + data.poi[i].lat;
-			displayMapMarker()
 		}else{
 			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 		}
@@ -152,7 +156,8 @@ let oneWalkCallback = function(data){
         waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
     }
     directions.setDestination([geopos.lon, geopos.lat]);
-    map.flyTo({
+	displayMapMarker()
+    _map.flyTo({
         center: [geopos.lon, geopos.lat],
         zoom: 13
     });
@@ -186,7 +191,7 @@ let walkDataCallback = function(data){
 
 		$(".walkDetail").click(function(e){
 			e.preventDefault();
-			waypoints = "";
+			waypoints = "", allPos = "";
 
 			switch($(this).attr("walk-type")){
 				case "f":
@@ -212,19 +217,23 @@ let walkDataCallback = function(data){
 					data.poi[i].name = "Your position";
 				}
 
-				if(data.poi[i].name !== "Your position") addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+				if(data.poi[i].name !== "Your position"){ 
+					addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+				}
+				
 				if(i == data.poi.length - 1){
 					//Last
 					allPos += data.poi[i].lon + "," + data.poi[i].lat;
-					displayMapMarker()
 				}else{
 					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 				}
+				console.log(i + " -- " + allPos)
 	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
 	            waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
 	        }
 	        directions.setDestination([geopos.lon, geopos.lat]);
-	        map.flyTo({
+			displayMapMarker()
+	        _map.flyTo({
 	            center: [geopos.lon, geopos.lat],
 	            zoom: 13
 	        });
@@ -259,7 +268,7 @@ let addMapMarker = (lon, lat, title, index) => {
 } 
 
 let displayMapMarker = () => {
-	map.getSource("places").setData({
+	_map.getSource("places").setData({
         "type": "FeatureCollection",
         "features": markersList
     })
@@ -267,7 +276,7 @@ let displayMapMarker = () => {
 
 /*
 	LATER: Informations à propos du POI
-map.on('click', 'places', function (e) {
+_map.on('click', 'places', function (e) {
     let coordinates = e.features[0].geometry.coordinates.slice();
     let description = e.features[0].properties.description;
 
@@ -285,13 +294,13 @@ map.on('click', 'places', function (e) {
 });
 
 // Change the cursor to a pointer when the mouse is over the places layer.
-map.on('mouseenter', 'places', function () {
-    map.getCanvas().style.cursor = 'pointer';
+_map.on('mouseenter', 'places', function () {
+    _map.getCanvas().style.cursor = 'pointer';
 });
 
 // Change it back to a pointer when it leaves.
-map.on('mouseleave', 'places', function () {
-    map.getCanvas().style.cursor = '';
+_map.on('mouseleave', 'places', function () {
+    _map.getCanvas().style.cursor = '';
 });
 */
 
@@ -317,8 +326,8 @@ $("#go").click(function(e){
   	directionsInfo = getDirections(allPos);
   	_paq.push(['trackEvent', 'Click', 'Started walk', goUrl]);
 
-	map.resize();
-	map.flyTo({
+	_map.resize();
+	_map.flyTo({
 		pitch: 60,
 		zoom: 20,
 		center: [geopos.lon, geopos.lat]
@@ -366,7 +375,7 @@ let rotationEventCallback = (event) => {
   	}else{
     	compassdir = event.alpha;
   	}
-	map.easeTo({
+	_map.easeTo({
 		center: [geopos.lon, geopos.lat],
         pitch: 60,
 	    bearing: compassdir,
@@ -395,8 +404,10 @@ let allStepsInfo = ""
 
 
 function getDirections(allPos){
+	console.log(allPos)
 	$.ajax({
 		method: "GET",
+		timeout: 3000,
 		url: "https://api.mapbox.com/directions/v5/mapbox/walking/" + allPos + "?steps=true&access_token=" + mapboxgl.accessToken
 	})
 	.done(function(data){
@@ -432,7 +443,7 @@ function getDirections(allPos){
 				}
 	   		}
 	   	})
-	});
+	}).catch((err) => console.log(err));
 }
 
 function showCurrentDirection(){
@@ -468,7 +479,7 @@ function showCurrentDirection(){
 		}
 
 
-		map.flyTo({
+		_map.flyTo({
 			center: [geopos.lon, geopos.lat]
 		});
 
