@@ -18,7 +18,21 @@ let goUrl, geopos,
 	loadingWalk = false,
 	loadWalkInterval,
 	imageStorage = "https://app.walk.cafe/mapbox-directions/",
-	markersList = []
+	markersList = [],
+	startPoint = []
+
+	/*
+		Variables à sauvegarder:
+		 - goUrl
+		 - allPos, allSteps, stepsLocation, stepsIcon, stepsDuration
+		 - saveData
+		 - markersList
+		 - startPoint
+		Comment restaurer:
+		 - On vérifie si le cookie existe
+		 - S'il existe, on lance un callback dédié quand map.once() called (cf. renderOneWalk)
+		 - Le cookie dure 4h
+	*/
 
 // App.js
 mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA"
@@ -82,14 +96,54 @@ $(document).ready(() => {
 $(document).ready(function(){
 	let id = getUrlParameter('id') 
 
-	if(id !== undefined && !isNaN(parseInt(id))){
+	if(id !== undefined && !isNaN(parseInt(id)) && getCookie("walkSaveWalk") == null){
+		goUrl = id
 		// Il existe un id donc on le parse
 		$("#searchBtn").prop('disabled', true);
 		$("#searchBtn").html("Loading...");
 
 		renderOneWalk()
 	}
+
+	// Si le cookie existe, on restaure la balade
+	if(getCookie("walkSaveWalk") != null){
+		let cookieData = JSON.parse(getCookie("walkSaveWalk"))
+		// Il existe un cookie donc on le parse
+		$("#searchBtn").prop('disabled', true);
+		$("#searchBtn").html("Loading...");
+
+		goUrl = cookieData.goUrl
+		saveData = cookieData.saveData
+		startPoint = cookieData.startPoint
+		restoreWalk()
+	}
 });
+
+let restoreWalk = () => {
+	if(!loadingWalk){
+		loadingWalk = true
+		loadWalkInterval = setInterval(restoreWalk, 200)
+	}
+	if(_map.loaded()){
+		geopos = {
+			lat: geolocate._lastKnownPosition.coords.latitude,
+			lon: geolocate._lastKnownPosition.coords.longitude
+		}
+		clearInterval(loadWalkInterval)
+		oneWalkCallback(saveData)
+		$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + goUrl)
+		$("#nearLink").css("display", "none");
+		$("#clipboard").css("display", "block");
+
+		/*$("#popupSearch").css("display", "none");
+		$("#popupList").css("display", "none");
+		$("#information").css("display", "block");
+		$("#map").css("height", "100vh");*/
+	}
+}
+
+
+
 
 let renderOneWalk = () => {
 	// Fonction qui est appelée tant que _map.loaded() = false
@@ -141,16 +195,19 @@ let oneWalkCallback = function(data){
 	}
 	_paq.push(['trackEvent', 'Load', 'Loading specific walk', data.id]);
 	
-	data.poi = JSON.parse(data.path)
-	data.poi.unshift({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
-	data.poi.push({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
-	delete data.path;
-	delete data.provider;
+	if(data.path){
+		data.poi = JSON.parse(data.path)
+		data.poi.unshift({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
+		data.poi.push({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
+		delete data.path;
+		delete data.provider;
+	}
 	$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + data.id)
 	
 	waypoints += "<li><b>" + data.duration + " min</b>, <b>" + (data.poi.length - 2) + " POI</b></li>";
 	directions.removeRoutes();
-	directions.setOrigin([geopos.lon, geopos.lat]);
+	if(startPoint.length == 0) startPoint = [geopos.lon, geopos.lat]
+	directions.setOrigin(startPoint);
 
 	for (let i = 0; i < data.poi.length; i++) {
 		if(data.poi[i].name === undefined){
@@ -171,7 +228,7 @@ let oneWalkCallback = function(data){
         directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
         waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
     }
-    directions.setDestination([geopos.lon, geopos.lat]);
+    directions.setDestination(startPoint);
 	displayMapMarker()
     _map.flyTo({
         center: [geopos.lon, geopos.lat],
@@ -181,6 +238,7 @@ let oneWalkCallback = function(data){
 	$("#popupSearch").css("display", "none");
 	$("#popupChoice").css("display", "none");
 	$("#popupList").css("display", "block");
+	saveData = data
 
 }
 
@@ -220,12 +278,14 @@ let walkDataCallback = function(data){
 					data = saveData.g;
 					break;
 			}
+			saveData = data
 			goUrl = data.walkId;
 			window.history.pushState("", "", 'index.html?id=' + goUrl);
 			$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + goUrl)
 
 			directions.removeRoutes();
-			directions.setOrigin([geopos.lon, geopos.lat]);
+			startPoint = [geopos.lon, geopos.lat]
+			directions.setOrigin(startPoint);
 
 			waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
 			for (let i = 0; i < data.poi.length; i++) {
@@ -355,6 +415,7 @@ $("#go").click(function(e){
 });
 $(".cancel").click(function(e){
 	e.preventDefault();
+	saveData = null
 	if($(this).attr("cancel") == "search"){
 		$("#popupChoice").css("display", "none");
 		$("#popupList").css("display", "none");
@@ -483,11 +544,15 @@ function showCurrentDirection(){
 		$("#information #current").html("<img src='" + imageStorage + stepsIcon[1] + "'>" + allSteps[1] + "<span style='float:right'>" + _time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + "</span>");
 		
 		// On retire de l'array
+		saveData.poi.splice(0, 1)
 		stepsIcon.splice(0, 1);
 		allSteps.splice(0, 1);
 		stepsLocation.splice(0, 1);
 
 		if(allSteps.length == 0){
+
+			alert("What if you share your walk on Twitter or elsewhere? We would be happy to hear about you! <3")
+			_paq.push(['trackEvent', 'Done', 'Finished walk', data.id]);
 			console.log("Done!")
 		}
 
