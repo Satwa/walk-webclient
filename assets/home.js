@@ -227,7 +227,6 @@ let walkDataCallback = function(data){
 				}else{
 					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 				}
-				console.log(i + " -- " + allPos)
 	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
 	            waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
 	        }
@@ -373,7 +372,7 @@ let rotationEventCallback = (event) => {
   	}else{
     	compassdir = event.alpha;
   	}
-	_map.easeTo({
+	_map.flyTo({
 		center: [geopos.lon, geopos.lat],
         pitch: 60,
 	    bearing: compassdir,
@@ -402,7 +401,6 @@ let allStepsInfo = ""
 
 
 function getDirections(allPos){
-	console.log(allPos)
 	$.ajax({
 		method: "GET",
 		timeout: 3000,
@@ -450,11 +448,14 @@ function showCurrentDirection(){
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
   	let roundValue = 4; // Default is 4, else is for debug (such as 2)
-	// console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
-	// console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + "- LON: " + stepsLocation[0][0].toFixed(roundValue));
-	
+	/* console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
+	 console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + " - LON: " + stepsLocation[0][0].toFixed(roundValue));
+	console.log(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue))
+	console.log(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue))
+	console.log("===========================================================")*/
+
 	// On met toujours à jour par sécurité, si y'a un bouchon sur le trottoir
-	_time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
+	// En fait non, _time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
 	$("#information #current span").html(_time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}))
 
 	if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
@@ -469,6 +470,10 @@ function showCurrentDirection(){
 		stepsIcon.splice(0, 1);
 		allSteps.splice(0, 1);
 		stepsLocation.splice(0, 1);
+
+		if(allSteps.length == 0){
+			console.log("Done!")
+		}
 
 		allStepsInfo = ""
  		for(let x = 1; x < allSteps.length; x++){
