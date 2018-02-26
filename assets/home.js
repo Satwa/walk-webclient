@@ -71,6 +71,13 @@ _map.once('load', () => {
 })
 
 
+$(document).ready(() => {
+	if(getCookie("walkWalksLimit") == null || getCookie("walkWalksLimit") == ""){
+		// on crée le cookie
+		setCookie("walkWalksLimit", "0", 1)
+	}
+})
+
 // Home.js
 $(document).ready(function(){
 	let id = getUrlParameter('id') 
@@ -110,6 +117,15 @@ $("#searchBtn").click(function(e){
 		lat: geolocate._lastKnownPosition.coords.latitude,
 		lon: geolocate._lastKnownPosition.coords.longitude
 	}
+	
+	//Increment walk limit
+	setCookie("walkWalksLimit", parseInt(getCookie("walkWalksLimit"))+1, 1)
+	if(getCookie("walkWalksLimit") >= 5){
+		// L'utilisateur a déjà généré 5 balades
+		alert("Sadly, you already generated more than 5 walks today and because you're a huge fan of crowdsharing you'll excuse us <3")
+		return false;
+	}
+	
 	//Add Loading
 	$("#searchBtn").prop('disabled', true);
 	$("#searchBtn").html("Loading...");
