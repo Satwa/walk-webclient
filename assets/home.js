@@ -96,7 +96,7 @@ $(document).ready(() => {
 $(document).ready(function(){
 	let id = getUrlParameter('id') 
 
-	if(id !== undefined && !isNaN(parseInt(id)) && getCookie("walkSaveWalk") == null){
+	if(id !== undefined && !isNaN(parseInt(id)) && (getCookie("walkSaveWalk") == null || getCookie("walkSaveWalk") == "")){
 		goUrl = id
 		// Il existe un id donc on le parse
 		$("#searchBtn").prop('disabled', true);
@@ -106,7 +106,7 @@ $(document).ready(function(){
 	}
 
 	// Si le cookie existe, on restaure la balade
-	if(getCookie("walkSaveWalk") != null){
+	if(getCookie("walkSaveWalk") != "" && getCookie("walkSaveWalk") != null){
 		let cookieData = JSON.parse(getCookie("walkSaveWalk"))
 		// Il existe un cookie donc on le parse
 		$("#searchBtn").prop('disabled', true);
@@ -416,6 +416,8 @@ $("#go").click(function(e){
 $(".cancel").click(function(e){
 	e.preventDefault();
 	saveData = null
+	// On supprime le cookie, dans tous les cas il est réécrit
+	setCookie("walkSaveWalk", "", 1)
 	if($(this).attr("cancel") == "search"){
 		$("#popupChoice").css("display", "none");
 		$("#popupList").css("display", "none");

@@ -34,14 +34,11 @@ let getCookie = (name) => {
     }
     return null;
 }
-let eraseCookie = (name) => {   
-    document.cookie = name+'=; Max-Age=-99999999;';  
-}
 
 
 window.addEventListener("beforeunload", (e) => {
     console.log("unload!!")
-    if(!document.URL.includes("near") && allSteps.length > 0){
+    if(!document.URL.includes("near") && saveData){
         console.log("Saving data")
         // on est sur l'accueil donc on sauvegarde les variables
         
@@ -53,7 +50,6 @@ window.addEventListener("beforeunload", (e) => {
         console.log(getByteLen(data2save))
 
         setCookie("walkSaveWalk", data2save, 4/24)
-        console.log(getCookie("walkSaveWalk"))
     }
 })
 
