@@ -38,16 +38,17 @@ let getCookie = (name) => {
 
 window.addEventListener("beforeunload", (e) => {
     console.log("unload!!")
-    if(!document.URL.includes("near") && saveData){
+    if(!document.URL.includes("near") && saveData && goUrl !== undefined){
         console.log("Saving data")
         // on est sur l'accueil donc on sauvegarde les variables
         
         let data2save = JSON.stringify({
             goUrl: goUrl,
             saveData: saveData,
+            deltaData: deltaData,
             startPoint: startPoint
         })
-        console.log(getByteLen(data2save))
+        console.log(getByteLen(data2save) + " bytes")
 
         setCookie("walkSaveWalk", data2save, 4/24)
     }

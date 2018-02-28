@@ -19,20 +19,8 @@ let goUrl, geopos,
 	loadWalkInterval,
 	imageStorage = "https://app.walk.cafe/mapbox-directions/",
 	markersList = [],
-	startPoint = []
-
-	/*
-		Variables à sauvegarder:
-		 - goUrl
-		 - allPos, allSteps, stepsLocation, stepsIcon, stepsDuration
-		 - saveData
-		 - markersList
-		 - startPoint
-		Comment restaurer:
-		 - On vérifie si le cookie existe
-		 - S'il existe, on lance un callback dédié quand map.once() called (cf. renderOneWalk)
-		 - Le cookie dure 4h
-	*/
+	startPoint = [],
+	deltaData
 
 // App.js
 mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA"
@@ -108,12 +96,17 @@ $(document).ready(function(){
 	// Si le cookie existe, on restaure la balade
 	if(getCookie("walkSaveWalk") != "" && getCookie("walkSaveWalk") != null){
 		let cookieData = JSON.parse(getCookie("walkSaveWalk"))
+		if(cookieData.goUrl == undefined) return
 		// Il existe un cookie donc on le parse
 		$("#searchBtn").prop('disabled', true);
 		$("#searchBtn").html("Loading...");
 
 		goUrl = cookieData.goUrl
-		saveData = cookieData.saveData
+		if(cookieData.deltaData){
+			saveData = cookieData.deltaData
+		}else{
+			saveData = cookieData.saveData
+		}
 		startPoint = cookieData.startPoint
 		restoreWalk()
 	}
@@ -201,6 +194,8 @@ let oneWalkCallback = function(data){
 		data.poi.push({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
 		delete data.path;
 		delete data.provider;
+	}else{
+		window.history.pushState("", "", "index.html?id=" + goUrl)
 	}
 	$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + data.id)
 	
@@ -247,9 +242,9 @@ let walkDataCallback = function(data){
 	$("#searchBtn").html("Search a walk");
 
 	if(data.error === undefined){
-		saveData = data;
+		saveData = data
 		let i = 1
-		let walks = "";
+		let walks = ""
 		if(data.f.poi !== undefined){
 			walks += "<li>Walk #" + i + " (" + data.f.duration + "min, " + (data.f.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
 			i++
@@ -261,6 +256,7 @@ let walkDataCallback = function(data){
 		if(data.g.poi !== undefined){
 			walks += "<li>Walk #" + i + " (" + data.g.duration + "min, " + (data.g.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
 		}
+
 		$('#popupChoice ul').html(walks);
 
 		$(".walkDetail").click(function(e){
@@ -278,7 +274,8 @@ let walkDataCallback = function(data){
 					data = saveData.g;
 					break;
 			}
-			saveData = data
+			deltaData = data
+			//saveData = data
 			goUrl = data.walkId;
 			window.history.pushState("", "", 'index.html?id=' + goUrl);
 			$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + goUrl)
@@ -318,13 +315,18 @@ let walkDataCallback = function(data){
 			$("#popupChoice").css("display", "none");
 			$("#popupList").css("display", "block");
 		})
+		if(data.g.poi == data.f.poi && data.f.poi == data.w.poi && data.w.poi == undefined){
+			saveData = null
+    		$('#popupChoice ul').html("I'm sorry but I found nothing interesting <br> You can suggest a walk at <a href='https://twitter.com/getwalkapp' target='_blank'>@getwalkapp</a>");
+		}
+
 	}else{
 		saveData = null
     	$('#popupChoice ul').html("I'm sorry but I found nothing interesting <br> You can suggest a walk at <a href='https://twitter.com/getwalkapp' target='_blank'>@getwalkapp</a>");
 	}
-		$("#popupSearch").css("display", "none");
-		$("#popupChoice").css("display", "block");
-		$("#popupList").css("display", "none");
+	$("#popupSearch").css("display", "none");
+	$("#popupChoice").css("display", "block");
+	$("#popupList").css("display", "none");
 }
 
 let addMapMarker = (lon, lat, title, index) => {
@@ -394,6 +396,9 @@ $("#go").click(function(e){
 	if(goUrl !== undefined){
 		saveUserChoice(goUrl)
 	}
+	if(deltaData){
+		saveData = deltaData
+	}
 
 
   	directionsInfo = getDirections(allPos);
@@ -415,7 +420,7 @@ $("#go").click(function(e){
 });
 $(".cancel").click(function(e){
 	e.preventDefault();
-	saveData = null
+	//saveData = null
 	// On supprime le cookie, dans tous les cas il est réécrit
 	setCookie("walkSaveWalk", "", 1)
 	if($(this).attr("cancel") == "search"){
@@ -526,7 +531,7 @@ function showCurrentDirection(){
 		lat: geolocate._lastKnownPosition.coords.latitude,
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
-  	let roundValue = 4; // Default is 4, else is for debug (such as 2)
+  	let roundValue = 3; // Default is 4, else is for debug (such as 2). Maybe it works w/ 3?
 	/* console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
 	 console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + " - LON: " + stepsLocation[0][0].toFixed(roundValue));
 	console.log(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue))
@@ -537,7 +542,7 @@ function showCurrentDirection(){
 	// En fait non, _time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
 	$("#information #current span").html(_time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}))
 
-	if(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue)){
+	if(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue)){
 		// On met à jour l'affichage
 
 		stepsDuration.splice(0, 1)
