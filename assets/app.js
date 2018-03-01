@@ -38,7 +38,7 @@ let getCookie = (name) => {
 
 window.addEventListener("beforeunload", (e) => {
     console.log("unload!!")
-    if(!document.URL.includes("near") && saveData && goUrl !== undefined){
+    if(!document.URL.includes("near") && saveData && goUrl !== undefined && getUrlParameter("id") !== undefined){
         console.log("Saving data")
         // on est sur l'accueil donc on sauvegarde les variables
         

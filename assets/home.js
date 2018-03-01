@@ -127,11 +127,6 @@ let restoreWalk = () => {
 		$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + goUrl)
 		$("#nearLink").css("display", "none");
 		$("#clipboard").css("display", "block");
-
-		/*$("#popupSearch").css("display", "none");
-		$("#popupList").css("display", "none");
-		$("#information").css("display", "block");
-		$("#map").css("height", "100vh");*/
 	}
 }
 
@@ -139,7 +134,7 @@ let restoreWalk = () => {
 
 
 let renderOneWalk = () => {
-	// Fonction qui est appelée tant que _map.loaded() = false
+	// Fonction appelée tant que !_map.loaded()
 	if(!loadingWalk){
 		loadingWalk = true
 		loadWalkInterval = setInterval(renderOneWalk, 300)
@@ -202,6 +197,13 @@ let oneWalkCallback = function(data){
 	waypoints += "<li><b>" + data.duration + " min</b>, <b>" + (data.poi.length - 2) + " POI</b></li>";
 	directions.removeRoutes();
 	if(startPoint.length == 0) startPoint = [geopos.lon, geopos.lat]
+
+	if(startPoint){ // On set le point de départ comme le point actuel pour éviter d'avoir des directions qui sont en réalité derrière nous
+		data.poi[0].lat = geopos.lat
+		data.poi[0].lon = geopos.lon
+		console.log("Start point exists, resetting startPoint")
+	}
+	
 	directions.setOrigin(startPoint);
 
 	for (let i = 0; i < data.poi.length; i++) {
@@ -500,7 +502,7 @@ function getDirections(allPos){
 
 		    	if(step.maneuver.modifier){
 		    		// Le modifier existe
-		    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier.replace(/ /g,"_") + ".png"
+		    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier.split(" ").join("_") + ".png"
 		    	}else{
 		    		name = "direction_" + step.maneuver.type + ".png"
 		    	}
