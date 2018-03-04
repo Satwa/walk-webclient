@@ -194,17 +194,17 @@ let oneWalkCallback = function(data){
 	}
 	$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + data.id)
 	
-	waypoints += "<li><b>" + data.duration + " min</b>, <b>" + (data.poi.length - 2) + " POI</b></li>";
+	waypoints += "<li><b>" + data.duration + " min</b>, <b>" + (data.poi.length - 2) + " monuments</b></li>";
 	directions.removeRoutes();
-	if(startPoint.length == 0) startPoint = [geopos.lon, geopos.lat]
-
-	if(startPoint){ // On set le point de départ comme le point actuel pour éviter d'avoir des directions qui sont en réalité derrière nous
-		data.poi[0].lat = geopos.lat
-		data.poi[0].lon = geopos.lon
+	if(startPoint.length == 0){
+		startPoint = [geopos.lon, geopos.lat]	
+	} 
+	if(data.poi[0].name != "Your position"){
 		console.log("Start point exists, resetting startPoint")
+		data.poi.unshift({lat: geopos.lat, lon: geopos.lon, name: "Your position"})
 	}
 	
-	directions.setOrigin(startPoint);
+	directions.setOrigin([geopos.lon, geopos.lat]);
 
 	for (let i = 0; i < data.poi.length; i++) {
 		if(data.poi[i].name === undefined){
@@ -277,7 +277,6 @@ let walkDataCallback = function(data){
 					break;
 			}
 			deltaData = data
-			//saveData = data
 			goUrl = data.walkId;
 			window.history.pushState("", "", 'index.html?id=' + goUrl);
 			$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + goUrl)
@@ -286,7 +285,7 @@ let walkDataCallback = function(data){
 			startPoint = [geopos.lon, geopos.lat]
 			directions.setOrigin(startPoint);
 
-			waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km </b></li>";
+			waypoints += "<li><b>" + data.duration + " min, " + data.distance + " km</b></li>";
 			for (let i = 0; i < data.poi.length; i++) {
 				if(data.poi[i].name === undefined){
 					data.poi[i].name = "Your position";
@@ -393,8 +392,7 @@ $("#go").click(function(e){
 	$("#information").css("display", "block");
 	$("#map").css("height", "100vh");
 
-	// On enregistre le choix de l'utilisateur
-	// Si goUrl undefined => on est dans le cas d'une balade partagée donc déjà publique
+	// On enregistre le choix de l'utilisateur si goUrl défini (sur un malentendu il peut y avoir une erreur)
 	if(goUrl !== undefined){
 		saveUserChoice(goUrl)
 	}
@@ -414,15 +412,12 @@ $("#go").click(function(e){
 	});
 
 	if(window.DeviceOrientationEvent) {
-		// Si l'orientation est disponible, on displayBlock le bouton de rotation 🔄.
-		// Quand on clique dessus, on supprime l'event handler + opacity.5, si on clique à nouveau, on le crée
 		$("#disableCompass").css("display", "block")
 		rotationEvent()
 	}
 });
 $(".cancel").click(function(e){
 	e.preventDefault();
-	//saveData = null
 	// On supprime le cookie, dans tous les cas il est réécrit
 	setCookie("walkSaveWalk", "", 1)
 	if($(this).attr("cancel") == "search"){
@@ -459,9 +454,8 @@ let rotationEventCallback = (event) => {
     	compassdir = event.alpha;
   	}
 	_map.flyTo({
-		center: [geopos.lon, geopos.lat],
         pitch: 60,
-	    bearing: compassdir,
+	    bearing: compassdir
 	});
 }
 
@@ -502,9 +496,9 @@ function getDirections(allPos){
 
 		    	if(step.maneuver.modifier){
 		    		// Le modifier existe
-		    		name = "direction_" + step.maneuver.type + "_" + step.maneuver.modifier.split(" ").join("_") + ".png"
+		    		name = "direction_" + step.maneuver.type.split(" ").join("_") + "_" + step.maneuver.modifier.split(" ").join("_") + ".png"
 		    	}else{
-		    		name = "direction_" + step.maneuver.type + ".png"
+		    		name = "direction_" + step.maneuver.type.split(" ").join("_") + ".png"
 		    	}
 		    	stepsIcon.push(name); // All steps icon
 			 	allSteps.push(step.maneuver.instruction); // All steps instruction 
@@ -534,11 +528,13 @@ function showCurrentDirection(){
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
   	let roundValue = 3; // Default is 4, else is for debug (such as 2). Maybe it works w/ 3?
-	/* console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
-	 console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + " - LON: " + stepsLocation[0][0].toFixed(roundValue));
+	/* 
+	console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
+	console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + " - LON: " + stepsLocation[0][0].toFixed(roundValue));
 	console.log(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue))
 	console.log(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue))
-	console.log("===========================================================")*/
+	console.log("===========================================================")
+	*/
 
 	// On met toujours à jour par sécurité, si y'a un bouchon sur le trottoir
 	// En fait non, _time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
@@ -559,8 +555,7 @@ function showCurrentDirection(){
 		stepsLocation.splice(0, 1);
 
 		if(allSteps.length == 0){
-
-			alert("What if you share your walk on Twitter or elsewhere? We would be happy to hear about you! <3")
+			alert("Did you enjoy your Walk? We would be happy to hear about you! <3")
 			_paq.push(['trackEvent', 'Done', 'Finished walk', data.id]);
 			console.log("Done!")
 		}
