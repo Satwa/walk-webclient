@@ -236,7 +236,7 @@ let oneWalkCallback = function(data){
 	$("#popupChoice").css("display", "none");
 	$("#popupList").css("display", "block");
 	saveData = data
-
+	onWalkDataChange()
 }
 
 let walkDataCallback = function(data){
@@ -315,6 +315,7 @@ let walkDataCallback = function(data){
 			$("#popupSearch").css("display", "none");
 			$("#popupChoice").css("display", "none");
 			$("#popupList").css("display", "block");
+			onWalkDataChange()
 		})
 		if(data.g.poi == data.f.poi && data.f.poi == data.w.poi && data.w.poi == undefined){
 			saveData = null
@@ -415,6 +416,7 @@ $("#go").click(function(e){
 		$("#disableCompass").css("display", "block")
 		rotationEvent()
 	}
+	onWalkDataChange()
 });
 $(".cancel").click(function(e){
 	e.preventDefault();
@@ -527,7 +529,7 @@ function showCurrentDirection(){
 		lat: geolocate._lastKnownPosition.coords.latitude,
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
-  	let roundValue = 3; // Default is 4, else is for debug (such as 2). Maybe it works w/ 3?
+  	let roundValue = 4; // Default is 4, else is for debug (such as 2). Maybe it works w/ 3?
 	/* 
 	console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
 	console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + " - LON: " + stepsLocation[0][0].toFixed(roundValue));
@@ -542,6 +544,7 @@ function showCurrentDirection(){
 
 	if(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue)){
 		// On met à jour l'affichage
+		onWalkDataChange()
 
 		stepsDuration.splice(0, 1)
 		_time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
