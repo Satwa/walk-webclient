@@ -16,36 +16,21 @@ var getUrlParameter = (sParam) => {
 }
 
 var setCookie = (name,value,days) => {
-    value.expireTime = Date.now() + days*24*60*60 // timestamp actuel + 24h en minutes en secondes
-    try{
-        localStorage.setItem(name, value)
-    }catch(e){
-        alert("Error happened")
-        alert(e)
+    if(days){
+        console.log("Days=>lastUpd")
+        localStorage.setItem("walkLastUpdate", Math.floor(new Date().getTime()/1000) + days*24*60*60)
     }
-    /*var expires = "";
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days*24*60*60*1000));
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";*/
+    localStorage.setItem(name, value)
 }
 let getCookie = (name) => {
     let item = localStorage.getItem(name)
-    if(item && item.expireTime >= Date.now()){
+    if(name == "walkWalksLimit" && Math.floor(new Date().getTime()/1000) >= parseInt(localStorage.getItem("walkLastUpdate"))){
+        console.log("walkLastUpdate < now")
         localStorage.removeItem(name)
-        return null;
+        localStorage.removeItem("walkLastUpdate")
+        return null
     }
     return item
-    /*var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;*/
 }
 
 let unloadCallback = (e) => {
@@ -57,17 +42,17 @@ let unloadCallback = (e) => {
             goUrl: goUrl,
             saveData: saveData,
             deltaData: deltaData,
-            startPoint: startPoint
+            startPoint: startPoint,
+            eraseAt: Math.floor(new Date().getTime()/1000) + 4*24*60*60
         })
         console.log(getByteLen(data2save) + " bytes")
 
-        setCookie("walkSaveWalk", data2save, 4/24)
+        setCookie("walkSaveWalk", data2save)
         return null
     }
 }
 
 window.addEventListener("walkdatachanged", unloadCallback)
-// According to https://www.igvita.com/2015/11/20/dont-lose-user-and-app-state-use-page-visibility/
 
 
 // Au lieu de s'embêter à détecter tous les types de leave page, on va appeler un event qui va sauvegarder le state à chaque étape

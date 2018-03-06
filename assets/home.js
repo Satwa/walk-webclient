@@ -76,7 +76,7 @@ _map.once('load', () => {
 $(document).ready(() => {
 	if(getCookie("walkWalksLimit") == null || getCookie("walkWalksLimit") == ""){
 		// on crée le cookie
-		setCookie("walkWalksLimit", "0", 1)
+		setCookie("walkWalksLimit", 0, 1)
 	}
 })
 
@@ -96,6 +96,11 @@ $(document).ready(function(){
 	// Si le cookie existe, on restaure la balade
 	if(getCookie("walkSaveWalk") != "" && getCookie("walkSaveWalk") != null){
 		let cookieData = JSON.parse(getCookie("walkSaveWalk"))
+		if(Math.floor(new Date().getTime()/1000) >= cookieData.eraseAt){
+			console.log("Removing saved walk")
+			localStorage.removeItem("walkSaveWalk")
+			return
+		}
 		if(cookieData.goUrl == undefined) return
 		// Il existe un cookie donc on le parse
 		$("#searchBtn").prop('disabled', true);
@@ -421,7 +426,7 @@ $("#go").click(function(e){
 $(".cancel").click(function(e){
 	e.preventDefault();
 	// On supprime le cookie, dans tous les cas il est réécrit
-	setCookie("walkSaveWalk", "", 1)
+	setCookie("walkSaveWalk", "")
 	if($(this).attr("cancel") == "search"){
 		$("#popupChoice").css("display", "none");
 		$("#popupList").css("display", "none");
