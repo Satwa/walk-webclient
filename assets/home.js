@@ -27,7 +27,7 @@ mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFye
 
 let _map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9?optimize=true',
+    style: 'mapbox://styles/mapbox/streets-v10?optimize=true',
     zoom: 8,
 });
 
@@ -50,6 +50,13 @@ setTimeout(geolocate._onClickGeolocate.bind(geolocate), 100);
 
 
 _map.once('load', () => {
+
+	let hrs = new Date().getHours()
+	if(hrs >= 19 || hrs <= 7){ // Set night mode
+		_map.setStyle("mapbox://styles/mapbox/dark-v9")
+	}
+
+	// Add layer
 	_map.addLayer({
 		"id": "places",
 		"type": "symbol",
@@ -446,9 +453,9 @@ $(".cancel").click(function(e){
 	}
 	markersList = []
 	displayMapMarker()
+	directions.removeRoutes();
 
 	window.history.pushState("", "", 'index.html');
-	directions.removeRoutes();
 });
 
 $("#disableCompass").click((e) => rotationEvent())

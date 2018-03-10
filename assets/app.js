@@ -17,15 +17,15 @@ var getUrlParameter = (sParam) => {
 
 var setCookie = (name,value,days) => {
     if(days){
-        console.log("Days=>lastUpd")
-        localStorage.setItem("walkLastUpdate", Math.floor(new Date().getTime()/1000) + days*24*60*60)
+        console.log("Updating...")
+        localStorage.setItem("walkLastUpdate", Math.floor(new Date().getTime()/1000) + 8*60*60) // In fact it should be days*24*60*60
     }
     localStorage.setItem(name, value)
 }
 let getCookie = (name) => {
     let item = localStorage.getItem(name)
     if(name == "walkWalksLimit" && Math.floor(new Date().getTime()/1000) >= parseInt(localStorage.getItem("walkLastUpdate"))){
-        console.log("walkLastUpdate < now")
+        console.log("Reboot...")
         localStorage.removeItem(name)
         localStorage.removeItem("walkLastUpdate")
         return null
@@ -35,7 +35,7 @@ let getCookie = (name) => {
 
 let unloadCallback = (e) => {
     if(!document.URL.includes("near") && saveData && goUrl !== undefined && getUrlParameter("id") !== undefined){
-        console.log("Saving data")
+        console.log("Saving data!")
         // on est sur l'accueil donc on sauvegarde les variables
         
         let data2save = JSON.stringify({
