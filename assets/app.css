@@ -15,6 +15,7 @@ body{
     overflow-y: hidden;
     position: fixed;
     width:100vw;
+    font-family: Helvetica;
 }
 #map{
 	position:absolute;
