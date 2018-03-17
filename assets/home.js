@@ -1,12 +1,3 @@
-$('#val').html($("#freeTime").val());
-$(document).on('input', '#freeTime', function() {
-    $('#val').html($(this).val());
-});
-let _clipboard = new Clipboard('#clipboard');
-_clipboard.on('success', (e) => {
-	alert("The link has been copied to clipboard, feel free to share it with your friends!")
-})
-
 let goUrl, geopos,
 	allPos = "",
 	allSteps = [],
@@ -20,15 +11,20 @@ let goUrl, geopos,
 	imageStorage = "https://app.walk.cafe/mapbox-directions/",
 	markersList = [],
 	startPoint = [],
-	deltaData
+	deltaData,
+	forcedNightMode = false,
+	_clipboard = new Clipboard('#clipboard')
+
+$('#val').html($("#freeTime").val());
+$(document).on('input', '#freeTime', () => { $('#val').html($(this).val()) })
+_clipboard.on('success', (e) => { alert("The link has been copied to clipboard, feel free to share it with your friends!") })
 
 // App.js
 mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFyeHh5eWMyIn0.zgAp6M9VhZB3Ep0a7JACVA"
 
 let _map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v10?optimize=true',
-    zoom: 8,
+    zoom: 8
 });
 
 let geolocate = new mapboxgl.GeolocateControl({
@@ -48,14 +44,7 @@ _map.addControl(geolocate);
 _map.addControl(directions, 'top-left');
 setTimeout(geolocate._onClickGeolocate.bind(geolocate), 100);
 
-
 _map.once('load', () => {
-
-	let hrs = new Date().getHours()
-	if(hrs >= 19 || hrs <= 7){ // Set night mode
-		_map.setStyle("mapbox://styles/mapbox/dark-v9")
-	}
-
 	// Add layer
 	_map.addLayer({
 		"id": "places",
@@ -90,6 +79,26 @@ $(document).ready(() => {
 // Home.js
 $(document).ready(function(){
 	let id = getUrlParameter('id') 
+
+	if(getCookie("walkNightMode") == "" || getCookie("walkNightMode") == null || getCookie("walkNightMode") == undefined){
+   		setCookie("walkNightMode", "false")
+   	}
+   	forcedNightMode = (getCookie("walkNightMode") == "true")
+
+   	if(forcedNightMode){
+   		$("#nightMode").html("👓")
+   	}
+
+	let hrs = new Date().getHours()
+	if(hrs >= 19 && !forcedNightMode || hrs <= 7 && !forcedNightMode || forcedNightMode){ // Set night mode
+		console.log("dark style")
+		_map.setStyle("mapbox://styles/mapbox/dark-v9")
+	}else{
+		console.log("normal style")
+		_map.setStyle("mapbox://styles/mapbox/streets-v10?optimize=true")
+	}
+
+   	///////
 
 	if(id !== undefined && !isNaN(parseInt(id)) && (getCookie("walkSaveWalk") == null || getCookie("walkSaveWalk") == "")){
 		goUrl = id
@@ -177,7 +186,7 @@ $("#searchBtn").click(function(e){
 	if(getCookie("walkWalksLimit") >= 5){
 		// L'utilisateur a déjà généré 5 balades
 		alert("Sadly, you already generated more than 5 walks today and because you're a huge fan of crowdsharing you'll excuse us <3")
-		return false;
+		return false
 	}
 	
 	//Add Loading
@@ -395,6 +404,41 @@ _map.on('mouseleave', 'places', function () {
 });
 */
 
+$("#nightMode").click((e) => {
+	forcedNightMode = !forcedNightMode
+	if(forcedNightMode){
+   		$("#nightMode").html("👓")
+		_map.setStyle("mapbox://styles/mapbox/dark-v9")
+	}else{
+		$("#nightMode").text("🕶️")
+		_map.setStyle("mapbox://styles/mapbox/streets-v10?optimize=true")
+	}
+
+	setCookie("walkNightMode", forcedNightMode)
+
+	// Il faut remettre le layer à chaque changement de style
+	_map.addLayer({ 
+		"id": "places",
+		"type": "symbol",
+	    "source": {
+	        "type": "geojson",
+	        "data": {
+	            "type": "FeatureCollection",
+	            "features": markersList
+	        }
+	    },
+	    "layout": {
+	        "icon-image": "{icon}-15",
+	        "text-field": "{title}",
+	        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+	        "text-offset": [0, 0.6],
+	        "text-anchor": "top",
+	        "icon-allow-overlap": true,
+	        "text-size": 12
+	    }
+	})
+})
+
 $("#go").click(function(e){
 	e.preventDefault()
 	$("#nearLink").css("display", "none");
@@ -541,20 +585,14 @@ function showCurrentDirection(){
 		lat: geolocate._lastKnownPosition.coords.latitude,
 		lon: geolocate._lastKnownPosition.coords.longitude
 	};
-  	let roundValue = 4; // Default is 4, else is for debug (such as 2). Maybe it works w/ 3?
-	/* 
-	console.log("(pos) LAT: " + geopos.lat.toFixed(roundValue) + " - LON: " + geopos.lon.toFixed(roundValue));
-	console.log("(nxt) LAT: " + stepsLocation[0][1].toFixed(roundValue) + " - LON: " + stepsLocation[0][0].toFixed(roundValue));
-	console.log(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue))
-	console.log(geopos.lat.toFixed(roundValue) === stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) === stepsLocation[0][0].toFixed(roundValue))
-	console.log("===========================================================")
-	*/
+  	let roundValue = 4; // Default is 4, else is for debug (such as 2). It (half) works with 3
 
 	// On met toujours à jour par sécurité, si y'a un bouchon sur le trottoir
 	// En fait non, _time.setTime(new Date().getTime() + stepsDuration.reduce(reducer)*1000)
 	$("#information #current span").html(_time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}))
 
-	if(geopos.lat.toFixed(roundValue) == stepsLocation[0][1].toFixed(roundValue) && geopos.lon.toFixed(roundValue) == stepsLocation[0][0].toFixed(roundValue)){
+
+	if(stepsLocation[0][1].toFixed(roundValue)/1 >= (geopos.lat.toFixed(roundValue)/1 - .0001) && stepsLocation[0][1].toFixed(roundValue)/1 <= (geopos.lat.toFixed(roundValue)/1 + .0001) && stepsLocation[0][0].toFixed(roundValue)/1 >= (geopos.lon.toFixed(roundValue)/1 - .0001) && stepsLocation[0][0].toFixed(roundValue)/1 <= (geopos.lon.toFixed(roundValue)/1 + .0001)){
 		// On met à jour l'affichage
 		onWalkDataChange()
 
