@@ -542,7 +542,7 @@ function getDirections(allPos){
 	$.ajax({
 		method: "GET",
 		timeout: 3000,
-		url: "https://api.mapbox.com/directions/v5/mapbox/walking/" + allPos + "?steps=true&access_token=" + mapboxgl.accessToken
+		url: "https://api.mapbox.com/directions/v5/mapbox/walking/" + allPos + "?&language=" + (navigator.language || navigator.userLanguage).split("-")[0] + "&steps=true&access_token=" + mapboxgl.accessToken
 	})
 	.done(function(data){
 		// console.log(data)
