@@ -16,7 +16,7 @@ let goUrl, geopos,
 	_clipboard = new Clipboard('#clipboard')
 
 $('#val').html($("#freeTime").val());
-$(document).on('input', '#freeTime', () => { $('#val').html($(this).val()) })
+$(document).on('input', '#freeTime', function(){ $('#val').html($(this).val()) })
 _clipboard.on('success', (e) => { alert("The link has been copied to clipboard, feel free to share it with your friends!") })
 
 // App.js
@@ -517,7 +517,7 @@ let rotationEventCallback = (event) => {
 	});
 }
 
-let activate = 1
+let activate = 0
 let rotationEvent = () => {
 	if(activate){
 		// On le crée

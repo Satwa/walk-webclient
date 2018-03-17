@@ -1,4 +1,11 @@
 // Global
+let prod = true
+if(prod){
+    var console = {};
+    console.log = function(){};
+    console.error = function(){};
+    console.warn = function(){};
+}
 
 var getUrlParameter = (sParam) => {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
