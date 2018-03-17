@@ -13,7 +13,8 @@ let goUrl, geopos,
 	startPoint = [],
 	deltaData,
 	forcedNightMode = false,
-	_clipboard = new Clipboard('#clipboard')
+	_clipboard = new Clipboard('#clipboard'),
+	restoredPolyline
 
 $('#val').html($("#freeTime").val());
 $(document).on('input', '#freeTime', function(){ $('#val').html($(this).val()) })
@@ -25,20 +26,19 @@ mapboxgl.accessToken = "pk.eyJ1Ijoic2F0d2F5YSIsImEiOiJjaWsyaTV1NnQwMzRndm5rcGFye
 let _map = new mapboxgl.Map({
     container: 'map',
     zoom: 8
-});
-
+})
 let geolocate = new mapboxgl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
     },
     trackUserLocation: true
-});
+})
 let directions = new MapboxDirections({
 	accessToken: mapboxgl.accessToken,
     unit: 'metric',
     profile: 'walking',
     interactive: false
-});
+})
 
 _map.addControl(geolocate);
 _map.addControl(directions, 'top-left');
@@ -68,17 +68,14 @@ _map.once('load', () => {
 	})
 })
 
+// Home.js
+$(document).ready(function(){
+	let id = getUrlParameter('id') 
 
-$(document).ready(() => {
 	if(getCookie("walkWalksLimit") == null || getCookie("walkWalksLimit") == ""){
 		// on crée le cookie
 		setCookie("walkWalksLimit", 0, 1)
 	}
-})
-
-// Home.js
-$(document).ready(function(){
-	let id = getUrlParameter('id') 
 
 	if(getCookie("walkNightMode") == "" || getCookie("walkNightMode") == null || getCookie("walkNightMode") == undefined){
    		setCookie("walkNightMode", "false")
@@ -151,9 +148,6 @@ let restoreWalk = () => {
 	}
 }
 
-
-
-
 let renderOneWalk = () => {
 	// Fonction appelée tant que !_map.loaded()
 	if(!loadingWalk){
@@ -169,32 +163,6 @@ let renderOneWalk = () => {
 		getWalk(getUrlParameter('id')).then(oneWalkCallback).catch((e) => console.error(e))
 	}
 }
-
-$("#searchBtn").click(function(e){
-	e.preventDefault();
-	if(!geolocate._lastKnownPosition){
-		alert("Please wait while map is loading...");
-		return false;
-	}
-  	geopos = {
-		lat: geolocate._lastKnownPosition.coords.latitude,
-		lon: geolocate._lastKnownPosition.coords.longitude
-	}
-	
-	//Increment walk limit
-	setCookie("walkWalksLimit", parseInt(getCookie("walkWalksLimit"))+1, 1)
-	if(getCookie("walkWalksLimit") >= 5){
-		// L'utilisateur a déjà généré 5 balades
-		alert("Sadly, you already generated more than 5 walks today and because you're a huge fan of crowdsharing you'll excuse us <3")
-		return false
-	}
-	
-	//Add Loading
-	$("#searchBtn").prop('disabled', true);
-	$("#searchBtn").html("Loading...");
-	let freeTime = parseInt($("#val").text());
-	getNearWalk(geopos, freeTime).then(walkDataCallback);
-});
 
 let oneWalkCallback = function(data){
 	if(!data){
@@ -404,7 +372,33 @@ _map.on('mouseleave', 'places', function () {
 });
 */
 
-$("#nightMode").click((e) => {
+$("#searchBtn").click(function(e){
+	e.preventDefault();
+	if(!geolocate._lastKnownPosition){
+		alert("Please wait while map is loading...");
+		return false;
+	}
+  	geopos = {
+		lat: geolocate._lastKnownPosition.coords.latitude,
+		lon: geolocate._lastKnownPosition.coords.longitude
+	}
+	
+	//Increment walk limit
+	setCookie("walkWalksLimit", parseInt(getCookie("walkWalksLimit"))+1, 1)
+	if(getCookie("walkWalksLimit") >= 5){
+		// L'utilisateur a déjà généré 5 balades
+		alert("Sadly, you already generated more than 5 walks today and because you're a huge fan of crowdsharing you'll excuse us <3")
+		return false
+	}
+	
+	//Add Loading
+	$("#searchBtn").prop('disabled', true);
+	$("#searchBtn").html("Loading...");
+	let freeTime = parseInt($("#val").text());
+	getNearWalk(geopos, freeTime).then(walkDataCallback);
+});
+
+$("#nightMode").click((e) => { // NOT WORKING FU
 	forcedNightMode = !forcedNightMode
 	if(forcedNightMode){
    		$("#nightMode").html("👓")
@@ -414,29 +408,49 @@ $("#nightMode").click((e) => {
 		_map.setStyle("mapbox://styles/mapbox/streets-v10?optimize=true")
 	}
 
-	setCookie("walkNightMode", forcedNightMode)
-
-	// Il faut remettre le layer à chaque changement de style
-	_map.addLayer({ 
-		"id": "places",
-		"type": "symbol",
-	    "source": {
-	        "type": "geojson",
-	        "data": {
-	            "type": "FeatureCollection",
-	            "features": markersList
-	        }
-	    },
-	    "layout": {
-	        "icon-image": "{icon}-15",
-	        "text-field": "{title}",
-	        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-	        "text-offset": [0, 0.6],
-	        "text-anchor": "top",
-	        "icon-allow-overlap": true,
-	        "text-size": 12
-	    }
+	// Add POI layer
+	_map.on('style.load', function() {
+		_map.addLayer({ 
+			"id": "places",
+			"type": "symbol",
+		    "source": {
+		        "type": "geojson",
+		        "data": {
+		            "type": "FeatureCollection",
+		            "features": markersList
+		        }
+		    },
+		    "layout": {
+		        "icon-image": "{icon}-15",
+		        "text-field": "{title}",
+		        "text-font": ["Helvetica"],
+		        "text-offset": [0, 0.6],
+		        "text-anchor": "top",
+		        "icon-allow-overlap": true,
+		        "text-size": 12
+		    }
+		})
+/*
+		_map.addLayer({ 
+			"id": "route",
+			"type": "line",
+		    "source": {
+		        "type": "geojson",
+		        "data": {
+		            "type": "Feature",
+		            "properties": {},
+		            "geometry": {
+		            	"type": "LineString",
+		            	"coordinates": decodePolyline(restoredPolyline)
+		            }
+		        }
+		    }
+		})	*/
+		console.log(restoredPolyline)
+		//console.log(decodePolyline(restoredPolyline))
 	})
+
+	setCookie("walkNightMode", forcedNightMode)
 })
 
 $("#go").click(function(e){
@@ -546,6 +560,7 @@ function getDirections(allPos){
 	})
 	.done(function(data){
 		// console.log(data)
+		restoredPolyline = data.routes[0].geometry
 	   	let legs = data.routes[0].legs
 	   	let i = 0, name
 	   	legs.forEach((leg, index, array) => {
