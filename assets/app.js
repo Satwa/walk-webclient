@@ -63,9 +63,10 @@ var setCookie = (name,value,days) => {
 }
 let getCookie = (name) => {
     let item = localStorage.getItem(name)
-    if(name == "walkWalksLimit" && Math.floor(new Date().getTime()/1000) >= parseInt(localStorage.getItem("walkLastUpdate"))){
+    if((name == "walkWalksLimit" || name == "walkSaveWalk") && Math.floor(new Date().getTime()/1000) >= parseInt(localStorage.getItem("walkLastUpdate"))){
         console.log("Reboot...")
         localStorage.removeItem(name)
+        localStorage.removeItem("walkSaveWalk")
         localStorage.removeItem("walkLastUpdate")
         return null
     }
