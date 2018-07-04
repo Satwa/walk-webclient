@@ -10,6 +10,7 @@ $(document).ready(function(){
 		getWalkTimeline(false, geopos).then((data) => {
 			let walks = ""
 			let visualData = "";
+
 			for(let i = 0; i < data.length; i++){
 				data[i].poi = JSON.parse(data[i].path)
 				if(data[i].poi === undefined) continue;
@@ -17,13 +18,20 @@ $(document).ready(function(){
 				delete data[i].provider;
 				
 				visualData = "<div class='visual' id='" + data[i].id + "'>"
+
+				getWalkPicture(data[i].id).then((illustration) => {
+					console.log(data[i].id)
+					$("#img-" + data[i].id).attr("src", illustration.url)
+					console.log(illustration)
+				})
+
 				for(let x = 0; x < data[i].poi.length; x++){
 					visualData += data[i].poi[x].name + "<br>"
 				}
-				visualData += "<a onclick='window.location=\"index.html?id=" + data[i].id + "\"' style='margin-right:10px;float:right;color:#007AFF;cursor:pointer;'>Go</a>"
+				visualData += "<a onclick='window.location=\"index.html?id=" + data[i].id + "\"' style='text-align:center;color:#007AFF;cursor:pointer;'>Go</a>"
 				visualData += "<div style='clear:both'></div></div>"
 
-				walks += "<li> " + data[i].duration + " minutes, " + data[i].poi.length + " monuments  <a class='more' id='" + data[i].id + "' style='float:right;margin-right: 10px;color:#007AFF;cursor:pointer;'>More</a> " + visualData + " </li>"
+				walks += "<li> <img src='assets/no-file.jpg' id='img-" + data[i].id + "'>" + data[i].duration + " minutes<br> " + data[i].poi.length + " monuments  <br><a class='more' id='" + data[i].id + "' style='text-align:center;color:#007AFF;cursor:pointer;'>More</a> " + visualData + " </li>"
 			}
 			$("#loading").css("display", "none")
 			

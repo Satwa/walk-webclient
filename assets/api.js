@@ -38,10 +38,19 @@ function getWalkTimeline(city = false, position = false){
 	})
 	.done(function(data){
 		return data;
-	});
+	})
+	.catch((err) => {console.error(err)})
 
 	// By city or position
 }
+function getWalkPicture(id){
+	return $.ajax({
+		url: wrapperApi + "illustration&wid=" + id,
+		type: "GET"
+	})
+	.done((data) => {return data})
+}
+
 
 function saveUserChoice(id){
 	return $.ajax({

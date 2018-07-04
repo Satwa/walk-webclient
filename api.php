@@ -34,17 +34,33 @@
                     echo "{}";
                 }
                 break;
+            case 'illustration':
+                $url = "http://api.walk.cafe:3012/";
+                if(isset($_GET["wid"])){
+                    if(file_get_contents($url."walk/".$_GET["wid"]."/picture")){
+                        echo "{\"url\": \"".$url."walk/".$_GET["wid"]."/picture\"}";
+                    }else{
+                        echo "{\"url\": \"assets/no-file.jpg\"}";
+                    }
+                    //echo callAPI("GET", "walk/".$_GET["wid"]."/picture");
+                }else {
+                    echo "{\"url\": \"assets/no-file.jpg\"}";
+                }
 			default:
 				# code...
 				break;
 		}
 	}
 
+    // if(file_get_contents("http://api.walk.cafe:3012/walk/370/picture")){
+    //     echo "There's image";
+    // }
+    //echo(file_get_contents("http://api.walk.cafe:3012/walk/372/picture"));
 
 function callAPI($method, $url, $data = false){
     $curl = curl_init();
     #$url = "http://localhost:8081/" . $url;
-     $url = "http://api.joshua.ovh:3012/" . $url;
+     $url = "http://api.walk.cafe:3012/" . $url;
 
     switch ($method){
         case "POST":
