@@ -472,7 +472,7 @@ $("#go").click(function(e){
 	}
 
 
-  	directionsInfo = getDirections(allPos);
+  	directionsInfo = getDirections(allPos); // TODO: Changer allPos quand on supprime des POI
   	_paq.push(['trackEvent', 'Click', 'Started walk', goUrl]);
 
 	_map.resize();
@@ -623,7 +623,7 @@ function showCurrentDirection(){
 		stepsLocation.splice(0, 1);
 
 		if(allSteps.length == 0){
-			alert("Did you enjoy your Walk? We would be happy to hear about you! <3")
+			alert("Did you enjoy your Walk? We would be happy to hear from you! <3")
 			_paq.push(['trackEvent', 'Done', 'Finished walk', data.id]);
 			console.log("Done!")
 		}

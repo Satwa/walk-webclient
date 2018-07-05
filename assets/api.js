@@ -59,3 +59,11 @@ function saveUserChoice(id){
 	})
 	.done((data) => {return data})
 }
+
+function getUserProfile(id){
+	return $.ajax({
+		url: wrapperApi + "profile&id=" + id,
+		type: "GET"
+	})
+	.done((data) => {return data})
+}

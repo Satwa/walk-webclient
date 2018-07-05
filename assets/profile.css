@@ -1,0 +1,46 @@
+#container{
+	margin:0 auto;
+	max-width: 600px;
+	padding-top: 20px;
+	overflow: scroll;
+	display:block;
+	height: 100vh;
+}
+
+#profile{
+	display: block;
+	border: 1px solid lightgray;
+	border-radius: 2px;
+	padding:5px;
+}
+
+#walks ul li{
+	width:40%;
+	margin: 10px 5%;
+	display: inline-block;
+	text-align: center;
+	border-radius: 10px;
+	padding: 20px;
+	box-shadow: 0 0 10px lightgray;
+}
+
+#walks ul li img{ width:100%;border-radius:10px; }
+
+.twoside{
+	float:left;
+}
+.twoside img{
+	max-width:128px;
+	border-radius: 50%;
+}
+.twoside #name{
+	text-align: center;
+	line-height: 100px;
+	margin-left: 32px;
+}
+
+@media screen and (max-width:450px){
+	#list ul li{
+		width:90%;
+	}
+}

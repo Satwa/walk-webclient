@@ -34,7 +34,7 @@ h3, h4{
 
 #list ul li img{ width:100%;border-radius:10px; }
 
-@media screen and (max-width:550px){
+@media screen and (max-width:450px){
 	#list ul li{
 		width:90%;
 	}

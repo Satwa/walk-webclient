@@ -46,6 +46,14 @@
                 }else {
                     echo "{\"url\": \"assets/no-file.jpg\"}";
                 }
+                break;
+            case 'profile':
+                if(isset($_GET["id"])){
+                    echo callAPI("GET", "user/".$_GET["id"]);
+                }else{
+                    echo "{}";
+                }
+                break;
 			default:
 				# code...
 				break;
@@ -59,8 +67,8 @@
 
 function callAPI($method, $url, $data = false){
     $curl = curl_init();
-    #$url = "http://localhost:8081/" . $url;
-     $url = "http://api.walk.cafe:3012/" . $url;
+    $url = "http://localhost:3012/" . $url;
+     // $url = "http://api.walk.cafe:3012/" . $url;
 
     switch ($method){
         case "POST":

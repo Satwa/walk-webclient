@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Profile - Walk Beta</title>
+		<meta charset="utf-8">
+		<meta name="description" content="Find a walker's profile and see his walks... Discover new monuments with Walk!">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
+		<meta name='viewport' content='initial-scale=1.0,maximum-scale=1.0,user-scalable=no' />
+		<link rel="apple-touch-icon" href="assets/logoappi.png" />
+		<link rel="icon" type="image/png" href="https://walk.cafe/favicon.png" />
+
+	
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:site" content="@getwalkapp" />
+		<meta property="og:url" content="https://app.walk.cafe" />
+		<meta property="og:title" content="Walk app - Shared walks" />
+		<meta property="og:description" content="Discover what your neighbours already visited and what walk they followed!" />
+		<meta property="og:image" content="https://app.walk.cafe/assets/logoappi.png" />
+
+		<link rel="stylesheet" href="assets/app.css">
+		<link rel="stylesheet" href="assets/profile.css">
+	</head>
+	<body>
+		<!-- Logo -->
+		<div id="top" style="background:black;height:75px;">
+			<a onclick="window.location='index.html'" style="float:left;margin-left: 10px;cursor:pointer;line-height:75px;font-size: 28px" alt="Home">🏠</a>
+			<a onclick="window.location='near.html'"  style="float:left;margin-left: 20px;cursor:pointer;line-height:75px;font-size:28px;" alt="Near">🗺️</a>
+
+			<img src="assets/icon.png" id="logo" style="z-index:99999">
+		</div>
+
+		<div id="container">
+			<section id="profile">
+				<span class="twoside">
+					<img src="assets/no-file.jpg" id="profilepicture">
+				</span>
+				<span class="twoside">
+					<h2 id="name"></h2>
+				</span>
+				<div style="clear:both;"></div>
+			</section>
+			<section id="walks">
+				<ul></ul>
+			</section>
+			<div style="clear:both"></div><br><br>
+		</div>
+
+
+    	<script
+			  src="https://code.jquery.com/jquery-3.2.1.min.js"
+			  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+			  crossorigin="anonymous"></script>
+		<script src="assets/api.js"></script>
+		<script src="assets/app.js"></script>
+		<script src="assets/profile.js"></script>
+		<!-- Matomo -->
+		<script type="text/javascript">
+		  var _paq = _paq || [];
+		  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+		  _paq.push(['trackPageView']);
+		  _paq.push(['enableLinkTracking']);
+		  (function() {
+		    var u="//www.joshua.ovh/matomo/";
+		    _paq.push(['setTrackerUrl', u+'piwik.php']);
+		    _paq.push(['setSiteId', '4']);
+		    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+		    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+		  })();
+		</script>
+		<!-- End Matomo Code -->
+	</body>
+</html>
