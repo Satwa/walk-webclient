@@ -97,7 +97,8 @@ $(document).ready(function(){
 
    	///////
 
-	if(id !== undefined && !isNaN(parseInt(id)) && (getCookie("walkSaveWalk") == null || getCookie("walkSaveWalk") == "")){
+   	// S'il y a un id ET qu'il n'y a pas de walkSaveWalk OU id !=
+	if(id !== undefined && !isNaN(parseInt(id)) && (getCookie("walkSaveWalk") == null || getCookie("walkSaveWalk") == "" || JSON.parse(getCookie("walkSaveWalk")).goUrl != id)){
 		goUrl = id
 		// Il existe un id donc on le parse
 		$("#searchBtn").prop('disabled', true);
@@ -106,8 +107,8 @@ $(document).ready(function(){
 		renderOneWalk()
 	}
 
-	// Si le cookie existe, on restaure la balade
-	if(getCookie("walkSaveWalk") != "" && getCookie("walkSaveWalk") != null){
+	// Si le cookie existe ET que l'id est le même on restaure
+	if(getCookie("walkSaveWalk") != "" && getCookie("walkSaveWalk") != null && (id == JSON.parse(getCookie("walkSaveWalk")).goUrl || id === undefined || isNaN(parseInt(id)))){
 		let cookieData = JSON.parse(getCookie("walkSaveWalk"))
 		if(Math.floor(new Date().getTime()/1000) >= cookieData.eraseAt){
 			console.log("Removing saved walk")
@@ -203,6 +204,9 @@ let oneWalkCallback = function(data){
 
 		if(data.poi[i].name !== "Your position"){ 
 			addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+        	waypoints += "<li id='poi" + i + "'>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "<a onclick='removePOI(" + (i) + ")' class='remove'>X</a></li> \n";
+		}else{
+        	waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
 		}
 
 		if(i == data.poi.length - 1){
@@ -212,7 +216,6 @@ let oneWalkCallback = function(data){
 			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 		}
         directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-        waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
     }
     directions.setDestination(startPoint);
 	displayMapMarker()
@@ -282,6 +285,9 @@ let walkDataCallback = function(data){
 
 				if(data.poi[i].name !== "Your position"){ 
 					addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+					waypoints += "<li id='poi" + i + "'>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "<a onclick='removePOI(" + (i) + ")' class='remove'>X</a></li> \n";
+				}else{
+	            	waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
 				}
 				
 				if(i == data.poi.length - 1){
@@ -291,7 +297,6 @@ let walkDataCallback = function(data){
 					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
 				}
 	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
-	            waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
 	        }
 	        directions.setDestination([geopos.lon, geopos.lat]);
 			displayMapMarker()
@@ -452,6 +457,59 @@ $("#nightMode").click((e) => { // NOT WORKING FU
 
 	setCookie("walkNightMode", forcedNightMode)
 })
+
+let removePOI = (index) => {
+	/*
+		BRIEF
+			deltaData !== undefined
+				=> si l'utilisateur a fait une recherche
+
+			deltaData == undefined && saveData !== {f: .., g: .., w: ..}
+				=> si l'utilisateur restaure une balade
+	*/
+	var data;
+	let rIndex = $("#listStyle li#poi" + index).index() - 1
+	console.log(index)
+	if(deltaData !== undefined){
+		if(index <= 0 || rIndex >= deltaData.poi.length-1){ return }
+		console.log("deltaData")
+		deltaData.poi.splice($("#listStyle li#poi" + index).index() - 1, 1) // Supprimer des POI
+		$("#listStyle li#poi" + index).remove() // Supprimer l'affichage
+		if(deltaData.poi.length == 2){ window.location = "index.html"; return }
+		data = deltaData
+	}else{
+		if(index <= 0 || rIndex >= saveData.poi.length-1){ return }
+		console.log("saveData")
+		saveData.poi.splice($("#listStyle li#poi" + index).index() - 1, 1) // Supprimer des POI
+		$("#listStyle li#poi" + index).remove() // Supprimer l'affichage
+		if(saveData.poi.length == 2){ window.location = "index.html"; return }
+		data = saveData
+	}
+	markersList = [], allPos = ""
+	directions.removeRoutes()
+	startPoint = [geopos.lon, geopos.lat]
+	directions.setOrigin(startPoint)
+
+	for (let i = 0; i < data.poi.length; i++) {
+		if(data.poi[i].name === undefined){
+			data.poi[i].name = "Your position";
+		}
+
+		if(data.poi[i].name !== "Your position"){ 
+			addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+		}
+		
+		if(i == data.poi.length - 1){
+			//Last
+			allPos += data.poi[i].lon + "," + data.poi[i].lat;
+		}else{
+			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+		}
+        directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+    }
+    directions.setDestination([geopos.lon, geopos.lat]);
+	displayMapMarker()
+}
 
 $("#go").click(function(e){
 	e.preventDefault()

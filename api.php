@@ -67,8 +67,8 @@
 
 function callAPI($method, $url, $data = false){
     $curl = curl_init();
-    $url = "http://localhost:3012/" . $url;
-     // $url = "http://api.walk.cafe:3012/" . $url;
+    // $url = "http://localhost:3012/" . $url;
+    $url = "http://api.walk.cafe:3012/" . $url;
 
     switch ($method){
         case "POST":

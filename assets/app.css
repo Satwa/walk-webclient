@@ -136,3 +136,5 @@ img#logo{
     margin-top: 80vh;
     /*z-index: 99999999;*/display:none;
 }
+
+.remove{float:right; margin-right:20px; color:#007AFF;}
