@@ -174,7 +174,7 @@ let oneWalkCallback = function(data){
 	_paq.push(['trackEvent', 'Load', 'Loading specific walk', data.id]);
 	
 	if(data.path){
-		data.poi = JSON.parse(data.path)
+		data.poi = data.path
 		data.poi.unshift({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
 		data.poi.push({lat: geopos.lat, lon: geopos.lon, name: "Your position"});
 		delete data.path;
@@ -184,7 +184,7 @@ let oneWalkCallback = function(data){
 	}
 	$("#clipboard").attr("data-clipboard-text", 'https://app.walk.cafe/index.html?id=' + data.id)
 	
-	waypoints += "<li><b>" + data.duration + " min</b>, <b>" + (data.poi.length - 2) + " monuments</b></li>";
+	waypoints += "<li><b>" + data.duration + " min</b>, <b>" + data.poi.length + " monuments</b></li>";
 	directions.removeRoutes();
 	if(startPoint.length == 0){
 		startPoint = [geopos.lon, geopos.lat]	
@@ -203,7 +203,7 @@ let oneWalkCallback = function(data){
 		
 
 		if(data.poi[i].name !== "Your position"){ 
-			addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+			addMapMarker(data.poi[i].longitude, data.poi[i].latitude, data.poi[i].name, i)
         	waypoints += "<li id='poi" + i + "'>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "<a onclick='removePOI(" + (i) + ")' class='remove'>X</a></li> \n";
 		}else{
         	waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
@@ -211,11 +211,11 @@ let oneWalkCallback = function(data){
 
 		if(i == data.poi.length - 1){
 			//Last
-			allPos += data.poi[i].lon + "," + data.poi[i].lat;
+			allPos += data.poi[i].longitude + "," + data.poi[i].latitude;
 		}else{
-			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+			allPos += data.poi[i].longitude + "," + data.poi[i].latitude + ";";
 		}
-        directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+        directions.addWaypoint(i, [data.poi[i].longitude, data.poi[i].latitude]);
     }
     directions.setDestination(startPoint);
 	displayMapMarker()
@@ -240,15 +240,15 @@ let walkDataCallback = function(data){
 		let i = 1
 		let walks = ""
 		if(data.f.poi !== undefined){
-			walks += "<li>Walk #" + i + " (" + data.f.duration + "min, " + (data.f.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			walks += "<li>Walk #" + i + " (" + data.f.duration + "min, " + data.f.poi.length + " POI)" + '<a class="walkDetail" walk-type="f" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
 			i++
 		}
 		if(data.w.poi !== undefined){
-			walks += "<li>Walk #" + i + " (" + data.w.duration + "min, " + (data.w.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			walks += "<li>Walk #" + i + " (" + data.w.duration + "min, " + data.w.poi.length + " POI)" + '<a class="walkDetail" walk-type="w" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
 			i++
 		}
 		if(data.g.poi !== undefined){
-			walks += "<li>Walk #" + i + " (" + data.g.duration + "min, " + (data.g.poi.length - 2) + " POI)" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
+			walks += "<li>Walk #" + i + " (" + data.g.duration + "min, " + data.g.poi.length + " POI)" + '<a class="walkDetail" walk-type="g" style="float:right;margin-right: 10px;color:#007AFF;cursor:pointer;"> ➡️ </a>' + "</li>";
 		}
 
 		$('#popupChoice ul').html(walks);
@@ -284,7 +284,7 @@ let walkDataCallback = function(data){
 				}
 
 				if(data.poi[i].name !== "Your position"){ 
-					addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+					addMapMarker(data.poi[i].longitude, data.poi[i].latitude, data.poi[i].name, i)
 					waypoints += "<li id='poi" + i + "'>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "<a onclick='removePOI(" + (i) + ")' class='remove'>X</a></li> \n";
 				}else{
 	            	waypoints += "<li>" + data.poi[i].name.replace(/<br\s*[\/]?>/gi, " ") + "</li> \n";
@@ -292,11 +292,11 @@ let walkDataCallback = function(data){
 				
 				if(i == data.poi.length - 1){
 					//Last
-					allPos += data.poi[i].lon + "," + data.poi[i].lat;
+					allPos += data.poi[i].longitude + "," + data.poi[i].latitude;
 				}else{
-					allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+					allPos += data.poi[i].longitude + "," + data.poi[i].latitude + ";";
 				}
-	            directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+	            directions.addWaypoint(i, [data.poi[i].longitude, data.poi[i].latitude]);
 	        }
 	        directions.setDestination([geopos.lon, geopos.lat]);
 			displayMapMarker()
@@ -496,16 +496,16 @@ let removePOI = (index) => {
 		}
 
 		if(data.poi[i].name !== "Your position"){ 
-			addMapMarker(data.poi[i].lon, data.poi[i].lat, data.poi[i].name, i)
+			addMapMarker(data.poi[i].longitude, data.poi[i].latitude, data.poi[i].name, i)
 		}
 		
 		if(i == data.poi.length - 1){
 			//Last
-			allPos += data.poi[i].lon + "," + data.poi[i].lat;
+			allPos += data.poi[i].longitude + "," + data.poi[i].latitude;
 		}else{
-			allPos += data.poi[i].lon + "," + data.poi[i].lat + ";";
+			allPos += data.poi[i].longitude + "," + data.poi[i].latitude + ";";
 		}
-        directions.addWaypoint(i, [data.poi[i].lon, data.poi[i].lat]);
+        directions.addWaypoint(i, [data.poi[i].longitude, data.poi[i].latitude]);
     }
     directions.setDestination([geopos.lon, geopos.lat]);
 	displayMapMarker()

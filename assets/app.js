@@ -1,5 +1,5 @@
 // Global
-let prod = false
+let prod = true
 if(prod){
     var console = {};
     console.log = function(){};

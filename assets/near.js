@@ -12,7 +12,7 @@ $(document).ready(function(){
 			let visualData = "";
 
 			for(let i = 0; i < data.length; i++){
-				data[i].poi = JSON.parse(data[i].path)
+				data[i].poi = data[i].path
 				if(data[i].poi === undefined) continue;
 				delete data[i].path;
 				delete data[i].provider;
